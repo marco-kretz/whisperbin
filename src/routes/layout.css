@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+@import 'highlight.js/styles/github-dark.css';
+@import url('https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+	color-scheme: dark;
+	--terminal-bg: #050807;
+	--terminal-panel: #0a1310;
+	--terminal-grid: rgba(82, 255, 174, 0.08);
+	--terminal-accent: #62f3ae;
+	--terminal-accent-strong: #b8ffd7;
+	--terminal-danger: #ff8c8c;
+}
+
+html,
+body {
+	min-height: 100%;
+}
+
+body {
+	font-family:
+		'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+		'Courier New', monospace;
+	background-color: var(--terminal-bg);
+	color: #d2e6dc;
+	position: relative;
+	isolation: isolate;
+}
+
+body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	background-image:
+		radial-gradient(circle at top, rgba(98, 243, 174, 0.08), transparent 45%),
+		linear-gradient(90deg, transparent 0%, rgba(98, 243, 174, 0.08) 50%, transparent 100%),
+		linear-gradient(0deg, transparent 0%, rgba(98, 243, 174, 0.04) 50%, transparent 100%);
+	opacity: 0.55;
+	pointer-events: none;
+	z-index: -1;
+}
+
+body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	background-image: repeating-linear-gradient(
+		180deg,
+		rgba(98, 243, 174, 0.08) 0px,
+		rgba(98, 243, 174, 0.08) 1px,
+		transparent 1px,
+		transparent 3px
+	);
+	opacity: 0.15;
+	mix-blend-mode: screen;
+	pointer-events: none;
+	z-index: -1;
+}
+
+a {
+	color: var(--terminal-accent);
+}
+
+a:hover {
+	color: var(--terminal-accent-strong);
+}
+
+::selection {
+	background: rgba(98, 243, 174, 0.4);
+	color: #04110a;
+}
+
+pre code {
+	background: transparent !important;
+}
