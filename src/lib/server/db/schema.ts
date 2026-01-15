@@ -13,6 +13,7 @@ export const paste = sqliteTable(
 			.notNull()
 			.$defaultFn(() => new Date()),
 		expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+		onetime: integer('onetime', { mode: 'boolean' }).notNull().default(false),
 		passwordHash: text('password_hash'),
 		passwordSalt: text('password_salt')
 	},

@@ -1,6 +1,10 @@
 import { error, fail } from '@sveltejs/kit';
 
-import { getPasteOrDeleteIfExpired, verifyPastePassword } from '$lib/server/paste';
+import {
+	consumePasteById,
+	getPasteOrDeleteIfExpired,
+	verifyPastePassword
+} from '$lib/server/paste';
 
 import type { Actions, PageServerLoad } from './$types';
 
@@ -21,6 +25,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			language: record.language,
 			createdAt: record.createdAt,
 			expiresAt: record.expiresAt,
+			onetime: record.onetime,
 			requiresPassword
 		}
 	};
@@ -50,5 +55,33 @@ export const actions: Actions = {
 		}
 
 		return { content: record.content };
+	},
+	consume: async ({ params, request }) => {
+		const record = await getPasteOrDeleteIfExpired(params.id);
+
+		if (!record) {
+			throw error(404, 'Paste not found');
+		}
+
+		const formData = await request.formData();
+		const password = formData.get('password');
+
+		if (record.passwordHash || record.passwordSalt) {
+			if (typeof password !== 'string' || !password.trim()) {
+				return fail(400, { error: 'Password is required.' });
+			}
+
+			if (!verifyPastePassword(record, password)) {
+				return fail(403, { error: 'Incorrect password.' });
+			}
+		}
+
+		const consumed = await consumePasteById(record.id);
+
+		if (!consumed) {
+			throw error(404, 'Paste not found');
+		}
+
+		return { content: consumed.content };
 	}
 };

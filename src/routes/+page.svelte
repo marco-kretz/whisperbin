@@ -7,6 +7,7 @@
 		content?: string | null;
 		expiresIn?: string | null;
 		language?: string | null;
+		onetime?: string | null;
 	};
 
 	type ActionForm = {
@@ -23,8 +24,30 @@
 	let { data, form }: PageProps = $props();
 
 	const values = $derived(form?.values ?? {});
-	const selectedExpiry = $derived(values.expiresIn ?? '24h');
-	const selectedLanguage = $derived(values.language ?? 'plaintext');
+	let selectedExpiry = $state('24h');
+	let selectedLanguage = $state('plaintext');
+	let onetimeEnabled = $state(false);
+
+	$effect(() => {
+		if (values.expiresIn) {
+			selectedExpiry = values.expiresIn;
+		}
+
+		if (values.language) {
+			selectedLanguage = values.language;
+		}
+
+		if (values.onetime !== undefined) {
+			onetimeEnabled = values.onetime === 'on';
+		}
+	});
+	const selectedExpiryLabel = $derived(
+		EXPIRATION_OPTIONS.find((option) => option.value === selectedExpiry)?.label ?? selectedExpiry
+	);
+	const selectedLanguageLabel = $derived(
+		LANGUAGE_OPTIONS.find((option) => option.value === selectedLanguage)?.label ?? selectedLanguage
+	);
+	const onetimeLabel = $derived(onetimeEnabled ? 'ONE-TIME' : 'STANDARD');
 	const sharePath = $derived(form?.id ? `/${form.id}` : null);
 	const shareUrl = $derived(sharePath ? `${data.origin}${resolve(sharePath as '/')}` : null);
 	let copied = $state(false);
@@ -52,10 +75,13 @@
 		</p>
 		<div class="flex flex-wrap gap-3 text-xs text-emerald-200/70">
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				TTL {selectedExpiry}
+				TTL {selectedExpiryLabel}
 			</span>
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				LANG {selectedLanguage}
+				LANG {selectedLanguageLabel}
+			</span>
+			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
+				{onetimeLabel}
 			</span>
 		</div>
 	</header>
@@ -129,10 +155,11 @@
 					id="expiresIn"
 					name="expiresIn"
 					required
+					bind:value={selectedExpiry}
 					class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 				>
 					{#each EXPIRATION_OPTIONS as option (option.value)}
-						<option value={option.value} selected={option.value === selectedExpiry}>
+						<option value={option.value}>
 							{option.label}
 						</option>
 					{/each}
@@ -149,10 +176,11 @@
 					id="language"
 					name="language"
 					required
+					bind:value={selectedLanguage}
 					class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 				>
 					{#each LANGUAGE_OPTIONS as option (option.value)}
-						<option value={option.value} selected={option.value === selectedLanguage}>
+						<option value={option.value}>
 							{option.label}
 						</option>
 					{/each}
@@ -178,9 +206,28 @@
 			<p class="text-xs text-emerald-200/50">Leave blank for public access.</p>
 		</div>
 
+		<label
+			class="flex cursor-pointer items-start gap-3 rounded-xl border border-emerald-500/20 bg-black/30 px-4 py-3 text-sm text-emerald-100/80"
+		>
+			<input
+				class="mt-1 h-4 w-4 rounded border-emerald-500/40 bg-black/40 text-emerald-300 focus:ring-emerald-400/40"
+				type="checkbox"
+				name="onetime"
+				bind:checked={onetimeEnabled}
+			/>
+			<span class="flex flex-col gap-1">
+				<span class="text-xs font-semibold tracking-[0.25em] text-emerald-200 uppercase">
+					Delete after first view
+				</span>
+				<span class="text-xs text-emerald-200/50">
+					Viewer must confirm before the paste is revealed.
+				</span>
+			</span>
+		</label>
+
 		<button
 			type="submit"
-			class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200"
+			class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 shadow-[0_0_0_rgba(82,255,174,0)] transition hover:-translate-y-0.5 hover:bg-emerald-200 hover:shadow-[0_16px_30px_-18px_rgba(82,255,174,0.8)]"
 		>
 			Create paste
 		</button>

@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { onMount, tick } from 'svelte';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import type { Action } from 'svelte/action';
 
 	import hljs from 'highlight.js';
 
@@ -10,6 +13,7 @@
 		language: string;
 		createdAt: string | Date;
 		expiresAt: string | Date;
+		onetime: boolean;
 		requiresPassword: boolean;
 	};
 
@@ -27,10 +31,26 @@
 
 	const pasteContent = $derived(form?.content ?? data.paste.content ?? '');
 	const isLocked = $derived(data.paste.requiresPassword && !pasteContent);
+	const isOnetime = $derived(data.paste.onetime);
+	const shouldReveal = $derived(!isOnetime || Boolean(form?.content));
 	const createdAt = $derived(new Date(data.paste.createdAt));
 	const expiresAt = $derived(new Date(data.paste.expiresAt));
 	const lineCount = $derived(pasteContent ? pasteContent.split('\n').length : 0);
 	let copied = $state(false);
+	let passwordValue = $state('');
+
+	const consumeSubmit: SubmitFunction = () => {
+		return async ({ result, update }) => {
+			if (result.type === 'success') {
+				await update({ invalidateAll: false });
+				return;
+			}
+
+			await update();
+		};
+	};
+
+	const consumeEnhance: Action<HTMLFormElement> = (form) => enhance(form, consumeSubmit);
 
 	const copyPasteContent = async () => {
 		if (!pasteContent) return;
@@ -59,7 +79,7 @@
 	});
 
 	$effect(() => {
-		if (!isLocked) {
+		if (!isLocked && shouldReveal) {
 			highlight();
 		}
 	});
@@ -85,6 +105,13 @@
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
 				LINES {lineCount}
 			</span>
+			{#if isOnetime}
+				<span
+					class="rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-rose-200/80"
+				>
+					ONE-TIME
+				</span>
+			{/if}
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
 				Created <time datetime={createdAt.toISOString()}>{createdAt.toLocaleString()}</time>
 			</span>
@@ -123,6 +150,43 @@
 					class="inline-flex items-center justify-center rounded-lg bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200"
 				>
 					Unlock paste
+				</button>
+			</form>
+		</section>
+	{:else if isOnetime && !shouldReveal}
+		<section
+			class="rounded-2xl border border-rose-500/30 bg-rose-950/20 p-6 shadow-[0_0_0_1px_rgba(244,63,94,0.15),0_30px_80px_rgba(0,0,0,0.6)]"
+		>
+			<h2 class="text-lg font-semibold text-rose-100">One-time paste</h2>
+			<p class="mt-2 text-sm text-rose-100/70">
+				This paste will be deleted from the server the moment you reveal it.
+			</p>
+
+			{#if form?.error}
+				<div
+					class="mt-4 rounded-xl border border-red-500/30 bg-red-950/50 px-3 py-2 text-sm text-red-200"
+					role="alert"
+				>
+					{form.error}
+				</div>
+			{/if}
+
+			<form method="POST" action="?/consume" use:consumeEnhance class="mt-4 flex flex-col gap-3">
+				{#if data.paste.requiresPassword}
+					<input
+						name="password"
+						type="password"
+						autocomplete="current-password"
+						placeholder="Paste password"
+						bind:value={passwordValue}
+						class="rounded-lg border border-rose-500/30 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/40 focus:outline-none"
+					/>
+				{/if}
+				<button
+					type="submit"
+					class="inline-flex items-center justify-center rounded-lg bg-rose-300 px-4 py-2 text-sm font-semibold text-rose-950 transition hover:bg-rose-200"
+				>
+					Reveal and delete paste
 				</button>
 			</form>
 		</section>

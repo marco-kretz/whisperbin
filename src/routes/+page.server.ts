@@ -27,6 +27,7 @@ export const actions: Actions = {
 		const language = formData.get('language');
 		const languageValue = typeof language === 'string' ? language : null;
 		const password = normalizeOptionalString(formData.get('password'));
+		const onetime = formData.get('onetime') === 'on';
 
 		if (!content.trim()) {
 			return fail(400, {
@@ -35,7 +36,8 @@ export const actions: Actions = {
 					title,
 					content,
 					expiresIn: expiresInValue,
-					language: languageValue
+					language: languageValue,
+					onetime: onetime ? 'on' : null
 				}
 			});
 		}
@@ -47,7 +49,8 @@ export const actions: Actions = {
 					title,
 					content,
 					expiresIn: expiresInValue,
-					language: languageValue
+					language: languageValue,
+					onetime: onetime ? 'on' : null
 				}
 			});
 		}
@@ -59,7 +62,8 @@ export const actions: Actions = {
 					title,
 					content,
 					expiresIn: expiresInValue,
-					language: languageValue
+					language: languageValue,
+					onetime: onetime ? 'on' : null
 				}
 			});
 		}
@@ -71,7 +75,8 @@ export const actions: Actions = {
 					title,
 					content,
 					expiresIn: expiresInValue,
-					language: languageValue
+					language: languageValue,
+					onetime: onetime ? 'on' : null
 				}
 			});
 		}
@@ -83,7 +88,8 @@ export const actions: Actions = {
 					title,
 					content,
 					expiresIn: expiresInValue,
-					language: languageValue
+					language: languageValue,
+					onetime: onetime ? 'on' : null
 				}
 			});
 		}
@@ -95,7 +101,8 @@ export const actions: Actions = {
 					title,
 					content,
 					expiresIn: expiresInValue,
-					language: languageValue
+					language: languageValue,
+					onetime: onetime ? 'on' : null
 				}
 			});
 		}
@@ -109,7 +116,8 @@ export const actions: Actions = {
 					title,
 					content,
 					expiresIn: expiresInValue,
-					language: languageValue
+					language: languageValue,
+					onetime: onetime ? 'on' : null
 				}
 			});
 		}
@@ -124,6 +132,7 @@ export const actions: Actions = {
 			content,
 			language: languageValue,
 			expiresAt,
+			onetime,
 			password
 		});
 

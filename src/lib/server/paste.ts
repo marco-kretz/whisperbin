@@ -15,6 +15,7 @@ type CreatePasteInput = {
 	content: string;
 	language: string;
 	expiresAt: Date;
+	onetime: boolean;
 	password: string | null;
 };
 
@@ -42,6 +43,7 @@ export const createPaste = async ({
 	content,
 	language,
 	expiresAt,
+	onetime,
 	password
 }: CreatePasteInput) => {
 	let passwordHash: string | null = null;
@@ -59,6 +61,7 @@ export const createPaste = async ({
 		content,
 		language,
 		expiresAt,
+		onetime,
 		passwordHash,
 		passwordSalt
 	});
@@ -68,6 +71,16 @@ export const getPasteById = async (id: string) =>
 	db.query.paste.findFirst({ where: eq(paste.id, id) });
 
 export const deletePasteById = async (id: string) => db.delete(paste).where(eq(paste.id, id));
+
+export const consumePasteById = async (id: string) => {
+	const record = await getPasteById(id);
+
+	if (!record) return null;
+
+	await deletePasteById(id);
+
+	return record;
+};
 
 export const deleteExpiredPastes = async () =>
 	db.delete(paste).where(lte(paste.expiresAt, new Date()));
