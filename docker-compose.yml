@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: /data/local.db
+      RATE_LIMIT_REDIS_URL: redis://redis:6379
+      TRUSTED_PROXY_IPS: 127.0.0.1,::1
+      BODY_SIZE_LIMIT: 256K
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    volumes:
+      - data:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+volumes:
+  data:
