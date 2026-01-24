@@ -155,15 +155,15 @@
 </script>
 
 <svelte:head>
-	<title>Paste It</title>
+	<title>whiserpbin</title>
 </svelte:head>
 
 <main class="relative mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-16">
 	<header class="flex flex-col gap-4">
-		<p class="text-xs tracking-[0.35em] text-emerald-300/70 uppercase">Paste It Terminal</p>
-		<h1 class="text-4xl font-semibold text-emerald-100">Paste It</h1>
+		<p class="text-xs tracking-[0.35em] text-emerald-300/70 uppercase">whiserpbin</p>
+		<h1 class="text-4xl font-semibold text-emerald-100">Encrypted snippets that vanish</h1>
 		<p class="max-w-xl text-sm text-emerald-100/70">
-			Drop a snippet, set the expiry timer, and ship a read-only link with a minimal footprint.
+			Share secrets safely. Client-side encryption, optional passwords, and self-destructing pastes.
 		</p>
 		<div class="flex flex-wrap gap-3 text-xs text-emerald-200/70">
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">

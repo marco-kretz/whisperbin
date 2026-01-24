@@ -3,6 +3,7 @@
 	import hljs from 'highlight.js';
 
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import { onMount, tick } from 'svelte';
 	import type { Action } from 'svelte/action';
 
@@ -41,6 +42,7 @@
 	let decryptedTitle = $state<string | null>(null);
 	let decryptError = $state<string | null>(null);
 	let keyFromHash = $state<string | null>(null);
+	const rootPath = '/' as const;
 
 	const plainContent = $derived(form?.content ?? data.paste.content ?? '');
 	const cipherText = $derived(form?.content ?? data.paste.content ?? '');
@@ -159,12 +161,17 @@
 </script>
 
 <svelte:head>
-	<title>{displayTitle ?? 'Paste It'}</title>
+	<title>{displayTitle} · whiserpbin</title>
 </svelte:head>
 
 <main class="relative mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-16">
 	<header class="flex flex-col gap-4">
-		<p class="text-xs tracking-[0.35em] text-emerald-300/70 uppercase">Paste It Terminal</p>
+		<a
+			href={resolve(rootPath)}
+			class="text-xs tracking-[0.35em] text-emerald-300/70 uppercase transition-colors hover:text-emerald-200"
+		>
+			whiserpbin
+		</a>
 		<h1 class="text-4xl font-semibold text-emerald-100">{displayTitle}</h1>
 		<div class="flex flex-wrap gap-3 text-xs text-emerald-200/70">
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">

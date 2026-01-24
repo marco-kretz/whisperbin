@@ -1,38 +1,57 @@
-# sv
+# whiserpbin
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Encrypted, disposable paste sharing built with SvelteKit, Tailwind CSS v4, Drizzle, and SQLite.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Client-side AES-GCM encryption (server never sees the key)
+- Optional password protection and one-time reveal
+- Expiration-based cleanup
+- Syntax highlighting via highlight.js
+- JavaScript required for create/decrypt flows
 
-```sh
-# create a new project in the current directory
-npx sv create
+## How It Works
 
-# create a new project in my-app
-npx sv create my-app
+1. The browser encrypts your title/content with AES-GCM.
+2. The ciphertext is stored on the server.
+3. The decryption key lives only in the URL fragment (`#key=...`).
+
+Anyone with the full URL can decrypt the paste, so share carefully.
+
+## Requirements
+
+- Node.js 18+ (20 LTS recommended)
+- pnpm
+
+## Local Development
+
+```bash
+pnpm install
+pnpm dev
 ```
 
-## Developing
+## Scripts
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```bash
+pnpm build
+pnpm start
+pnpm lint
+pnpm check
 ```
 
-## Building
+## Configuration
 
-To create a production version of your app:
+Environment variables:
 
-```sh
-npm run build
-```
+- `DATABASE_URL` - SQLite file path (example: `/data/local.db`)
 
-You can preview the production build with `npm run preview`.
+## Limits (Defaults)
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- Title length: 120 characters
+- Content length (plaintext): 20,000 characters
+- Encrypted payload (ciphertext): 120,000 characters
+- Password length: 200 characters
+
+## Deployment
+
+See `DEPLOY.md` for Coolify guidance.
