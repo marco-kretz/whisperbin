@@ -44,6 +44,9 @@ pnpm check
 Environment variables:
 
 - `DATABASE_URL` - SQLite file path (example: `/data/local.db`)
+- `RATE_LIMIT_REDIS_URL` - Redis connection string for rate limiting (required in production)
+- `TRUSTED_PROXY_IPS` - Comma-separated proxy IPs allowed to set `X-Forwarded-For`
+- `BODY_SIZE_LIMIT` - Max request body size for the Node adapter (example: `256K`)
 
 ## Limits (Defaults)
 

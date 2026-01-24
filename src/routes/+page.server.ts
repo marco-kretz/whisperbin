@@ -28,7 +28,7 @@ export const actions: Actions = {
 		const clientIdentifier = getClientIdentifier(event);
 		const { request } = event;
 
-		if (!checkRateLimit(clientIdentifier, 10, 60000)) {
+		if (!(await checkRateLimit(clientIdentifier, 10, 60000))) {
 			return fail(429, { error: 'Too many requests. Please try again later.' });
 		}
 

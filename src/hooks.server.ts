@@ -16,7 +16,7 @@ export const handleError: HandleServerError = ({ error }) => {
 export const handle: Handle = sequence(async ({ event, resolve }) => {
 	const clientIdentifier = getClientIdentifier(event);
 
-	if (!checkRateLimit(clientIdentifier, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS)) {
+	if (!(await checkRateLimit(clientIdentifier, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS))) {
 		return new Response('Too many requests. Please try again later.', {
 			status: 429,
 			headers: {
@@ -31,6 +31,8 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
 	response.headers.set('X-Frame-Options', 'DENY');
 	response.headers.set('Referrer-Policy', 'no-referrer');
 	response.headers.set('X-XSS-Protection', '1; mode=block');
+	response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+	response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
 	response.headers.set(
 		'Permissions-Policy',
 		'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()'

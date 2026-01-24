@@ -56,7 +56,7 @@ export const actions: Actions = {
 		}
 
 		const clientIdentifier = getClientIdentifier(event);
-		if (!checkPasswordRateLimit(clientIdentifier)) {
+		if (!(await checkPasswordRateLimit(clientIdentifier))) {
 			return fail(429, { error: 'Too many attempts. Please try again later.' });
 		}
 
@@ -122,7 +122,7 @@ export const actions: Actions = {
 
 		const clientIdentifier = getClientIdentifier(event);
 		if (record.passwordHash || record.passwordSalt) {
-			if (!checkPasswordRateLimit(clientIdentifier)) {
+			if (!(await checkPasswordRateLimit(clientIdentifier))) {
 				return fail(429, { error: 'Too many attempts. Please try again later.' });
 			}
 		}

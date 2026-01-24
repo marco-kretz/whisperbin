@@ -1,7 +1,20 @@
+import { isIP } from 'node:net';
+
 import type { RequestEvent } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
+
+import { getRedisClient } from './redis';
 
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const passwordAttemptMap = new Map<string, { count: number; resetTime: number }>();
+
+const DEFAULT_TRUSTED_PROXIES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+const trustedProxyIps = new Set(
+	(env.TRUSTED_PROXY_IPS ?? '')
+		.split(',')
+		.map((value) => value.trim())
+		.filter(Boolean)
+);
 
 const cleanupMap = (map: Map<string, { count: number; resetTime: number }>) => {
 	const now = Date.now();
@@ -18,7 +31,55 @@ setInterval(() => {
 	cleanupMap(passwordAttemptMap);
 }, CLEANUP_INTERVAL).unref();
 
-export const checkRateLimit = (
+const normalizeAddress = (value: string) => {
+	if (!value) return value;
+	if (value.startsWith('[')) {
+		const end = value.indexOf(']');
+		return end === -1 ? value : value.slice(1, end);
+	}
+	if (value.includes('.') && value.includes(':')) {
+		return value.split(':')[0] ?? value;
+	}
+	return value;
+};
+
+const normalizeIp = (value: string | null) => {
+	if (!value) return null;
+	const trimmed = value.trim();
+	if (!trimmed) return null;
+	const normalized = normalizeAddress(trimmed);
+	if (!normalized) return null;
+	if (normalized.length > 200) return null;
+	if (isIP(normalized) === 0) return null;
+	return normalized;
+};
+
+const getForwardedClient = (request: Request) => {
+	const forwarded = request.headers.get('x-forwarded-for');
+	if (forwarded) {
+		const candidate = forwarded.split(',')[0]?.trim();
+		const normalized = normalizeIp(candidate ?? null);
+		if (normalized) return normalized;
+	}
+	const realIp = request.headers.get('x-real-ip');
+	return normalizeIp(realIp?.trim() ?? null);
+};
+
+const isTrustedProxy = (address: string | null) => {
+	if (!address) return false;
+	if (trustedProxyIps.size > 0) {
+		return trustedProxyIps.has(address);
+	}
+	return DEFAULT_TRUSTED_PROXIES.has(address);
+};
+
+const sanitizeIdentifier = (identifier: string) => {
+	const trimmed = identifier.trim();
+	const cleaned = trimmed.replace(/[^0-9a-zA-Z:._-]/g, '').slice(0, 200);
+	return cleaned || 'unknown';
+};
+
+const checkLocalRateLimit = (
 	identifier: string,
 	maxRequests: number,
 	windowMs: number
@@ -42,7 +103,7 @@ export const checkRateLimit = (
 	return true;
 };
 
-export const checkPasswordRateLimit = (identifier: string): boolean => {
+const checkLocalPasswordRateLimit = (identifier: string): boolean => {
 	const now = Date.now();
 	const entry = passwordAttemptMap.get(identifier);
 
@@ -62,88 +123,73 @@ export const checkPasswordRateLimit = (identifier: string): boolean => {
 	return true;
 };
 
-const isPrivateIpv4 = (address: string) => {
-	const parts = address.split('.').map((part) => Number(part));
-	if (parts.length !== 4 || parts.some((part) => Number.isNaN(part))) return false;
+const checkRedisRateLimit = async (
+	key: string,
+	maxRequests: number,
+	windowMs: number
+): Promise<boolean | null> => {
+	const redis = await getRedisClient();
+	if (!redis) return null;
 
-	const [first, second] = parts;
-
-	if (first === 10) return true;
-	if (first === 127) return true;
-	if (first === 169 && second === 254) return true;
-	if (first === 172 && second >= 16 && second <= 31) return true;
-	if (first === 192 && second === 168) return true;
-	if (first === 100 && second >= 64 && second <= 127) return true;
-
-	return false;
-};
-
-const isPrivateIpv6 = (address: string) => {
-	const normalized = address.toLowerCase();
-	if (normalized === '::1') return true;
-	if (normalized.startsWith('fc') || normalized.startsWith('fd')) return true;
-	if (normalized.startsWith('fe80')) return true;
-	return false;
-};
-
-const normalizeAddress = (value: string) => {
-	if (!value) return value;
-	if (value.startsWith('[')) {
-		const end = value.indexOf(']');
-		return end === -1 ? value : value.slice(1, end);
-	}
-	if (value.includes('.') && value.includes(':')) {
-		return value.split(':')[0] ?? value;
-	}
-	return value;
-};
-
-const isPrivateAddress = (address: string) => {
-	const normalized = normalizeAddress(address);
-
-	if (normalized.includes('.')) {
-		return isPrivateIpv4(normalized);
-	}
-
-	if (normalized.includes(':')) {
-		if (normalized.startsWith('::ffff:')) {
-			return isPrivateIpv4(normalized.replace('::ffff:', ''));
+	try {
+		const count = await redis.incr(key);
+		if (count === 1) {
+			await redis.pexpire(key, windowMs);
+		} else {
+			const ttl = await redis.pttl(key);
+			if (typeof ttl === 'number' && ttl < 0) {
+				await redis.pexpire(key, windowMs);
+			}
 		}
-		return isPrivateIpv6(normalized);
+		return count <= maxRequests;
+	} catch (error) {
+		console.error('Redis rate limit error:', error);
+		return null;
 	}
-
-	return false;
-};
-
-const getForwardedClient = (request: Request) => {
-	const forwarded = request.headers.get('x-forwarded-for');
-	if (forwarded) {
-		const candidate = forwarded.split(',')[0]?.trim();
-		if (candidate) return candidate;
-	}
-	const realIp = request.headers.get('x-real-ip');
-	return realIp?.trim() || null;
 };
 
 export const getClientIdentifier = (event: RequestEvent): string => {
 	let directAddress: string | null = null;
 
 	try {
-		directAddress = normalizeAddress(event.getClientAddress());
+		directAddress = normalizeIp(event.getClientAddress());
 	} catch {
 		directAddress = null;
 	}
 
 	const forwarded = getForwardedClient(event.request);
 
-	if (directAddress && isPrivateAddress(directAddress) && forwarded) {
+	if (directAddress && forwarded && isTrustedProxy(directAddress)) {
 		return forwarded;
 	}
 
 	if (directAddress) return directAddress;
-	if (forwarded) return forwarded;
 
 	return 'unknown';
+};
+
+export const checkRateLimit = async (
+	identifier: string,
+	maxRequests: number,
+	windowMs: number
+): Promise<boolean> => {
+	const safeIdentifier = sanitizeIdentifier(identifier);
+	const key = `rate:${safeIdentifier}`;
+	const redisResult = await checkRedisRateLimit(key, maxRequests, windowMs);
+
+	if (typeof redisResult === 'boolean') return redisResult;
+
+	return checkLocalRateLimit(safeIdentifier, maxRequests, windowMs);
+};
+
+export const checkPasswordRateLimit = async (identifier: string): Promise<boolean> => {
+	const safeIdentifier = sanitizeIdentifier(identifier);
+	const key = `password:${safeIdentifier}`;
+	const redisResult = await checkRedisRateLimit(key, 10, 300000);
+
+	if (typeof redisResult === 'boolean') return redisResult;
+
+	return checkLocalPasswordRateLimit(safeIdentifier);
 };
 
 export const addDelay = async () => {

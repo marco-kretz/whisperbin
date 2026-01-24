@@ -9,6 +9,9 @@
 ## Environment
 
 - `DATABASE_URL` must point to a persistent SQLite file path (example: `/data/local.db`).
+- `RATE_LIMIT_REDIS_URL` should point to a Redis instance (required in production).
+- `TRUSTED_PROXY_IPS` should list your reverse proxy IPs (example: `127.0.0.1,::1`).
+- `BODY_SIZE_LIMIT` should match your proxy request size limit (example: `256K`).
 
 ## Persistence
 
@@ -25,4 +28,5 @@ pnpm db:push
 
 ## Proxy Notes
 
-- Ensure your reverse proxy allows request bodies > 120 KB (encrypted paste payload limit).
+- Ensure your reverse proxy allows request bodies >= `BODY_SIZE_LIMIT`.
+- The default encrypted payload limit is 120 KB, so `BODY_SIZE_LIMIT=256K` is recommended.

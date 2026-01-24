@@ -26,6 +26,10 @@ body {
 	isolation: isolate;
 }
 
+.app-shell {
+	display: contents;
+}
+
 body::before {
 	content: '';
 	position: fixed;
