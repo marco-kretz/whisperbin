@@ -12,6 +12,12 @@ COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
+
+# Create data directory before build to avoid database initialization errors
+# Set a dummy DATABASE_URL for build if not provided
+ENV DATABASE_URL=${DATABASE_URL:-:memory:}
+RUN mkdir -p /data || true
+
 RUN pnpm run build
 
 FROM node:22-alpine AS runtime

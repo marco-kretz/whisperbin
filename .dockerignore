@@ -18,4 +18,3 @@ DEPLOY.md
 docker-compose.yml
 Dockerfile
 .dockerignore
-bun.lock
