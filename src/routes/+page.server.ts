@@ -8,6 +8,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 const MAX_CIPHERTEXT_LENGTH = 120000;
 const MAX_PASSWORD_LENGTH = 200;
+const MAX_TITLE_LENGTH = 120;
 const IV_LENGTH = 16;
 const BASE64URL_PATTERN = /^[A-Za-z0-9_-]+$/;
 
@@ -42,6 +43,20 @@ export const actions: Actions = {
 		const languageValue = typeof language === 'string' ? language : null;
 		const password = normalizeOptionalString(formData.get('password'));
 		const onetime = formData.get('onetime') === 'on';
+		const rawTitle = formData.get('title');
+		const title = typeof rawTitle === 'string' ? rawTitle : '';
+
+		if (title.length > MAX_TITLE_LENGTH) {
+			return fail(400, {
+				error: `Title must be under ${MAX_TITLE_LENGTH} characters.`,
+				values: {
+					expiresIn: expiresInValue,
+					language: languageValue,
+					onetime: onetime ? 'on' : null,
+					encrypted: encrypted ? '1' : null
+				}
+			});
+		}
 
 		const hasValidIv =
 			typeof contentIv === 'string' &&

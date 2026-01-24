@@ -230,6 +230,7 @@
 				id="title"
 				name="title"
 				placeholder="Untitled snippet"
+				maxlength={MAX_TITLE_LENGTH}
 				class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 				bind:value={titleValue}
 			/>
@@ -247,6 +248,7 @@
 				name="content"
 				rows="12"
 				required
+				maxlength={MAX_CONTENT_LENGTH}
 				placeholder="Paste your content here..."
 				class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 				bind:value={contentValue}
@@ -310,6 +312,7 @@
 				name="password"
 				type="password"
 				autocomplete="new-password"
+				maxlength={MAX_PASSWORD_LENGTH}
 				placeholder="Protect this paste"
 				class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 			/>
