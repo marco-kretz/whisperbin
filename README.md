@@ -20,23 +20,22 @@ Anyone with the full URL can decrypt the paste, so share carefully.
 
 ## Requirements
 
-- Node.js 18+ (20 LTS recommended)
-- pnpm
+- Bun 1.0+
 
 ## Local Development
 
 ```bash
-pnpm install
-pnpm dev
+bun install
+bun dev
 ```
 
 ## Scripts
 
 ```bash
-pnpm build
-pnpm start
-pnpm lint
-pnpm check
+bun run build
+bun start
+bun lint
+bun check
 ```
 
 ## Configuration
@@ -46,7 +45,7 @@ Environment variables:
 - `DATABASE_URL` - SQLite file path (example: `/data/local.db`)
 - `RATE_LIMIT_REDIS_URL` - Redis connection string for rate limiting (required in production)
 - `TRUSTED_PROXY_IPS` - Comma-separated proxy IPs allowed to set `X-Forwarded-For`
-- `BODY_SIZE_LIMIT` - Max request body size for the Node adapter (example: `256K`)
+- `BODY_SIZE_LIMIT` - Max request body size for the Bun adapter (example: `256K`)
 
 ## Limits (Defaults)
 

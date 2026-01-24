@@ -2,9 +2,9 @@
 
 ## Build & Run
 
-- Build command: `pnpm build`
-- Start command: `pnpm start` (alias for `node build`)
-- Node version: 18+ (prefer 20 LTS)
+- Build command: `bun run build`
+- Start command: `bun start`
+- Runtime: Bun 1.0+
 
 ## Environment
 
@@ -23,7 +23,7 @@
 Run once after first deploy (or after schema changes):
 
 ```bash
-pnpm db:push
+bun db:push
 ```
 
 ## Proxy Notes
