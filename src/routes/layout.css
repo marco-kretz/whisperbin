@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @import 'highlight.js/styles/github-dark.css';
-@import url('https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;600;700&display=swap');
 
 :root {
 	color-scheme: dark;
@@ -19,8 +18,8 @@ body {
 
 body {
 	font-family:
-		'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-		'Courier New', monospace;
+		ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+		monospace;
 	background-color: var(--terminal-bg);
 	color: #d2e6dc;
 	position: relative;

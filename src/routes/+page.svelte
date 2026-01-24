@@ -27,6 +27,8 @@
 	let selectedExpiry = $state('24h');
 	let selectedLanguage = $state('plaintext');
 	let onetimeEnabled = $state(false);
+	let titleValue = $state('');
+	let contentValue = $state('');
 
 	$effect(() => {
 		if (values.expiresIn) {
@@ -39,6 +41,14 @@
 
 		if (values.onetime !== undefined) {
 			onetimeEnabled = values.onetime === 'on';
+		}
+
+		if (values.title !== undefined) {
+			titleValue = values.title ?? '';
+		}
+
+		if (values.content !== undefined) {
+			contentValue = values.content ?? '';
 		}
 	});
 	const selectedExpiryLabel = $derived(
@@ -121,7 +131,7 @@
 				name="title"
 				placeholder="Untitled snippet"
 				class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
-				value={values.title ?? ''}
+				bind:value={titleValue}
 			/>
 		</div>
 
@@ -139,8 +149,8 @@
 				required
 				placeholder="Paste your content here..."
 				class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
-				>{values.content ?? ''}</textarea
-			>
+				bind:value={contentValue}
+			></textarea>
 		</div>
 
 		<div class="grid gap-4 sm:grid-cols-2">

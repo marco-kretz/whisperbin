@@ -3,14 +3,20 @@ import { randomUUID } from 'node:crypto';
 import { fail } from '@sveltejs/kit';
 import { getExpirationMs, isLanguageValue } from '$lib/paste-options';
 import { createPaste, deleteExpiredPastes } from '$lib/server/paste';
+import DOMPurify from 'isomorphic-dompurify';
+import { checkRateLimit, getClientIdentifier } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 
 const MAX_TITLE_LENGTH = 120;
 const MAX_CONTENT_LENGTH = 20000;
 const MAX_PASSWORD_LENGTH = 200;
 
-const normalizeOptionalString = (value: FormDataEntryValue | null) =>
-	typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+const normalizeOptionalString = (value: FormDataEntryValue | null): string | null => {
+	if (value === null) return null;
+	if (typeof value !== 'string') return null;
+	const trimmed = value.trim();
+	return trimmed.length > 0 ? trimmed : null;
+};
 
 export const load: PageServerLoad = async ({ url }) => ({
 	origin: url.origin
@@ -18,6 +24,12 @@ export const load: PageServerLoad = async ({ url }) => ({
 
 export const actions: Actions = {
 	default: async ({ request }) => {
+		const clientIdentifier = getClientIdentifier(request);
+
+		if (!checkRateLimit(clientIdentifier, 10, 60000)) {
+			return fail(429, { error: 'Too many requests. Please try again later.' });
+		}
+
 		const formData = await request.formData();
 		const title = normalizeOptionalString(formData.get('title'));
 		const rawContent = formData.get('content');
@@ -125,11 +137,14 @@ export const actions: Actions = {
 		const id = randomUUID();
 		const expiresAt = new Date(Date.now() + durationMs);
 
+		const sanitizedTitle = title ? DOMPurify.sanitize(title) : null;
+		const sanitizedContent = DOMPurify.sanitize(content);
+
 		await deleteExpiredPastes();
 		await createPaste({
 			id,
-			title,
-			content,
+			title: sanitizedTitle,
+			content: sanitizedContent,
 			language: languageValue,
 			expiresAt,
 			onetime,

@@ -1,6 +1,7 @@
 # Agent Instructions for mk-pasteit
 
 This document contains instructions for agentic coding assistants working in this repository.
+mk-pasteit is a SvelteKit app for creating and sharing text snippets (a pastebin-style service).
 
 ## Project Overview
 
