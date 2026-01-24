@@ -57,7 +57,7 @@
 	const expiresAt = $derived(new Date(data.paste.expiresAt));
 	const pasteContent = $derived(isEncrypted ? decryptedContent : plainContent);
 	const displayTitle = $derived(
-		isEncrypted ? (decryptedTitle ?? 'Encrypted paste') : (data.paste.title ?? 'Untitled paste')
+		isEncrypted ? (decryptedTitle ?? 'Verschlüsselter Paste') : (data.paste.title ?? 'Unbenannter Paste')
 	);
 	const lineCount = $derived(pasteContent ? pasteContent.split('\n').length : 0);
 
@@ -130,7 +130,7 @@
 		}
 
 		if (!activeKey) {
-			decryptError = 'Missing encryption key.';
+			decryptError = 'Verschlüsselungsschlüssel fehlt.';
 			return;
 		}
 
@@ -145,7 +145,7 @@
 			decryptedTitle = payload.title;
 		} catch (error) {
 			console.error('Decryption failed:', error);
-			decryptError = 'Unable to decrypt this paste.';
+			decryptError = 'Dieser Paste konnte nicht entschlüsselt werden.';
 		}
 	};
 
@@ -178,23 +178,23 @@
 				ID {data.paste.id}
 			</span>
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				LANG {data.paste.language}
+				SPRACHE {data.paste.language}
 			</span>
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				LINES {lineCount}
+				ZEILEN {lineCount}
 			</span>
 			{#if isOnetime}
 				<span
 					class="rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-rose-200/80"
 				>
-					ONE-TIME
+					EINMALIG
 				</span>
 			{/if}
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				Created <time datetime={createdAt.toISOString()}>{createdAt.toLocaleString()}</time>
+				Erstellt <time datetime={createdAt.toISOString()}>{createdAt.toLocaleString()}</time>
 			</span>
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				Expires <time datetime={expiresAt.toISOString()}>{expiresAt.toLocaleString()}</time>
+				Läuft ab <time datetime={expiresAt.toISOString()}>{expiresAt.toLocaleString()}</time>
 			</span>
 		</div>
 	</header>
@@ -203,7 +203,7 @@
 			class="rounded-2xl border border-amber-500/30 bg-amber-950/40 px-4 py-3 text-sm text-amber-200"
 			role="alert"
 		>
-			JavaScript is required to decrypt and view encrypted pastes.
+			JavaScript wird benötigt, um verschlüsselte Pastes zu entschlüsseln und anzuzeigen.
 		</div>
 	</noscript>
 
@@ -211,8 +211,8 @@
 		<section
 			class="rounded-2xl border border-emerald-500/20 bg-black/40 p-6 shadow-[0_0_0_1px_rgba(98,243,174,0.12),0_30px_80px_rgba(0,0,0,0.6)]"
 		>
-			<h2 class="text-lg font-semibold text-emerald-100">Password required</h2>
-			<p class="mt-2 text-sm text-emerald-100/60">Enter the password to unlock this paste.</p>
+			<h2 class="text-lg font-semibold text-emerald-100">Passwort erforderlich</h2>
+			<p class="mt-2 text-sm text-emerald-100/60">Gib das Passwort ein, um diesen Paste freizuschalten.</p>
 
 			{#if form?.error}
 				<div
@@ -228,14 +228,14 @@
 					name="password"
 					type="password"
 					autocomplete="current-password"
-					placeholder="Paste password"
+					placeholder="Paste-Passwort"
 					class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 				/>
 				<button
 					type="submit"
-					class="inline-flex items-center justify-center rounded-lg bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200"
+					class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200"
 				>
-					Unlock paste
+					Paste freischalten
 				</button>
 			</form>
 		</section>
@@ -243,9 +243,9 @@
 		<section
 			class="rounded-2xl border border-rose-500/30 bg-rose-950/20 p-6 shadow-[0_0_0_1px_rgba(244,63,94,0.15),0_30px_80px_rgba(0,0,0,0.6)]"
 		>
-			<h2 class="text-lg font-semibold text-rose-100">One-time paste</h2>
+			<h2 class="text-lg font-semibold text-rose-100">Einmaliger Paste</h2>
 			<p class="mt-2 text-sm text-rose-100/70">
-				This paste will be deleted from the server the moment you reveal it.
+				Dieser Paste wird vom Server gelöscht, sobald du ihn anzeigst.
 			</p>
 
 			{#if form?.error}
@@ -263,16 +263,16 @@
 						name="password"
 						type="password"
 						autocomplete="current-password"
-						placeholder="Paste password"
+						placeholder="Paste-Passwort"
 						bind:value={passwordValue}
 						class="rounded-lg border border-rose-500/30 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/40 focus:outline-none"
 					/>
 				{/if}
 				<button
 					type="submit"
-					class="inline-flex items-center justify-center rounded-lg bg-rose-300 px-4 py-2 text-sm font-semibold text-rose-950 transition hover:bg-rose-200"
+					class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-rose-300 px-4 py-2 text-sm font-semibold text-rose-950 transition hover:bg-rose-200"
 				>
-					Reveal and delete paste
+					Anzeigen und löschen
 				</button>
 			</form>
 		</section>
@@ -283,7 +283,7 @@
 			<div
 				class="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-500/15 px-4 py-3 text-xs tracking-[0.2em] text-emerald-200/70 uppercase"
 			>
-				<span>Output buffer</span>
+				<span>Ausgabe</span>
 				<div class="flex items-center gap-3">
 					<span>{data.paste.language}</span>
 					<button
@@ -291,10 +291,10 @@
 						onclick={copyPasteContent}
 						class="cursor-pointer rounded-full border border-emerald-300/60 bg-emerald-950/40 px-3 py-1 text-[10px] tracking-[0.2em] text-emerald-200 transition hover:border-emerald-200 hover:text-emerald-100"
 					>
-						{copied ? 'Copied' : 'Copy'}
+						{copied ? 'Kopiert' : 'Kopieren'}
 					</button>
 					<span class="sr-only" aria-live="polite">
-						{copied ? 'Paste content copied to clipboard.' : ''}
+						{copied ? 'Inhalt in Zwischenablage kopiert.' : ''}
 					</span>
 				</div>
 			</div>
@@ -313,7 +313,7 @@
 				href={resolve(rootPath)}
 				class="inline-flex items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-950/40 px-4 py-2 text-xs tracking-[0.2em] text-emerald-200 uppercase transition hover:border-emerald-200 hover:text-emerald-100"
 			>
-				Create your paste
+				Eigenen Paste erstellen
 			</a>
 		</div>
 	{/if}

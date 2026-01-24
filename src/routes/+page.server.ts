@@ -29,7 +29,7 @@ export const actions: Actions = {
 		const { request } = event;
 
 		if (!(await checkRateLimit(clientIdentifier, 10, 60000))) {
-			return fail(429, { error: 'Too many requests. Please try again later.' });
+			return fail(429, { error: 'Zu viele Anfragen. Bitte versuche es später erneut.' });
 		}
 
 		const formData = await request.formData();
@@ -48,7 +48,7 @@ export const actions: Actions = {
 
 		if (title.length > MAX_TITLE_LENGTH) {
 			return fail(400, {
-				error: `Title must be under ${MAX_TITLE_LENGTH} characters.`,
+				error: `Titel muss unter ${MAX_TITLE_LENGTH} Zeichen sein.`,
 				values: {
 					expiresIn: expiresInValue,
 					language: languageValue,
@@ -65,7 +65,7 @@ export const actions: Actions = {
 
 		if (!encrypted || !contentIv || !hasValidIv) {
 			return fail(400, {
-				error: 'End-to-end encryption is required.',
+				error: 'Ende-zu-Ende-Verschlüsselung ist erforderlich.',
 				values: {
 					expiresIn: expiresInValue,
 					language: languageValue,
@@ -77,7 +77,7 @@ export const actions: Actions = {
 
 		if (!content.trim()) {
 			return fail(400, {
-				error: 'Content is required.',
+				error: 'Inhalt ist erforderlich.',
 				values: {
 					expiresIn: expiresInValue,
 					language: languageValue,
@@ -89,7 +89,7 @@ export const actions: Actions = {
 
 		if (content.length > MAX_CIPHERTEXT_LENGTH) {
 			return fail(400, {
-				error: 'Encrypted payload is too large.',
+				error: 'Verschlüsselte Daten sind zu groß.',
 				values: {
 					expiresIn: expiresInValue,
 					language: languageValue,
@@ -101,7 +101,7 @@ export const actions: Actions = {
 
 		if (password && password.length > MAX_PASSWORD_LENGTH) {
 			return fail(400, {
-				error: `Password must be under ${MAX_PASSWORD_LENGTH} characters.`,
+				error: `Passwort muss unter ${MAX_PASSWORD_LENGTH} Zeichen sein.`,
 				values: {
 					expiresIn: expiresInValue,
 					language: languageValue,
@@ -113,7 +113,7 @@ export const actions: Actions = {
 
 		if (!expiresInValue) {
 			return fail(400, {
-				error: 'Expiration is required.',
+				error: 'Ablaufzeit ist erforderlich.',
 				values: {
 					expiresIn: expiresInValue,
 					language: languageValue,
@@ -125,7 +125,7 @@ export const actions: Actions = {
 
 		if (!languageValue || !isLanguageValue(languageValue)) {
 			return fail(400, {
-				error: 'File type is invalid.',
+				error: 'Dateityp ist ungültig.',
 				values: {
 					expiresIn: expiresInValue,
 					language: languageValue,
@@ -139,7 +139,7 @@ export const actions: Actions = {
 
 		if (!durationMs) {
 			return fail(400, {
-				error: 'Expiration is invalid.',
+				error: 'Ablaufzeit ist ungültig.',
 				values: {
 					expiresIn: expiresInValue,
 					language: languageValue,

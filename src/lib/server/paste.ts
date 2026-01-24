@@ -117,7 +117,7 @@ export const consumePasteWithPassword = async (
 	if (!record) return { error: null, record: null };
 
 	if (!record.onetime) {
-		return { error: 'Paste is not one-time.', record: null };
+		return { error: 'Paste ist nicht einmalig.', record: null };
 	}
 
 	const requiresPassword = Boolean(record.passwordHash || record.passwordSalt);
@@ -126,22 +126,22 @@ export const consumePasteWithPassword = async (
 
 	if (requiresPassword) {
 		if (!record.passwordHash || !record.passwordSalt) {
-			return { error: 'Access denied.', record: null };
+			return { error: 'Zugriff verweigert.', record: null };
 		}
 
 		if (!password || typeof password !== 'string' || !password.trim()) {
-			return { error: 'Password is required.', record: null };
+			return { error: 'Passwort ist erforderlich.', record: null };
 		}
 
 		const hashed = derivePasswordHash(password, record.passwordSalt);
 		const storedHash = Buffer.from(record.passwordHash, 'hex');
 
 		if (storedHash.length !== hashed.length) {
-			return { error: 'Incorrect password.', record: null };
+			return { error: 'Falsches Passwort.', record: null };
 		}
 
 		if (!timingSafeEqual(storedHash, hashed)) {
-			return { error: 'Incorrect password.', record: null };
+			return { error: 'Falsches Passwort.', record: null };
 		}
 
 		passwordHash = hashed.toString('hex');

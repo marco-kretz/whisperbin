@@ -21,9 +21,7 @@ const config = {
 				'object-src': ['none'],
 				'img-src': ['self', 'data:'],
 				'font-src': ['self'],
-				'style-src': isDev
-				? ['self', 'unsafe-inline']
-				: ['self', "'sha256-S8qMpvofolR8Mpjy4kQvEm7m1q8clzU4dfDH0AmvZjo='"],
+				'style-src': ['self', 'unsafe-inline'],
 				'script-src': ['self'],
 				'connect-src': isDev ? ['self', 'ws:'] : ['self'],
 				'upgrade-insecure-requests': true

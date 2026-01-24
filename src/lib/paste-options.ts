@@ -1,8 +1,8 @@
 export const EXPIRATION_OPTIONS = [
-	{ label: '1 hour', value: '1h', durationMs: 60 * 60 * 1000 },
-	{ label: '6 hours', value: '6h', durationMs: 6 * 60 * 60 * 1000 },
-	{ label: '24 hours', value: '24h', durationMs: 24 * 60 * 60 * 1000 },
-	{ label: '7 days', value: '7d', durationMs: 7 * 24 * 60 * 60 * 1000 }
+	{ label: '1 Stunde', value: '1h', durationMs: 60 * 60 * 1000 },
+	{ label: '6 Stunden', value: '6h', durationMs: 6 * 60 * 60 * 1000 },
+	{ label: '24 Stunden', value: '24h', durationMs: 24 * 60 * 60 * 1000 },
+	{ label: '7 Tage', value: '7d', durationMs: 7 * 24 * 60 * 60 * 1000 }
 ] as const;
 
 export type ExpirationValue = (typeof EXPIRATION_OPTIONS)[number]['value'];

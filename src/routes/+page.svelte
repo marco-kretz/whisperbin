@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import type { SubmitFunction } from '@sveltejs/kit';
 
 	import { encryptPayload } from '$lib/crypto';
 	import { EXPIRATION_OPTIONS, LANGUAGE_OPTIONS } from '$lib/paste-options';
@@ -71,7 +71,7 @@
 	const selectedLanguageLabel = $derived(
 		LANGUAGE_OPTIONS.find((option) => option.value === selectedLanguage)?.label ?? selectedLanguage
 	);
-	const onetimeLabel = $derived(onetimeEnabled ? 'ONE-TIME' : 'STANDARD');
+	const onetimeLabel = $derived(onetimeEnabled ? 'EINMALIG' : 'STANDARD');
 	const sharePath = $derived(form?.id ? `/${form.id}` : null);
 	const shareUrl = $derived(
 		sharePath && encryptionKey
@@ -88,26 +88,26 @@
 		const trimmedContent = contentValue.trim();
 
 		if (!trimmedContent) {
-			clientError = 'Content is required.';
+			clientError = 'Inhalt ist erforderlich.';
 			cancel();
 			return;
 		}
 
 		if (trimmedContent.length > MAX_CONTENT_LENGTH) {
-			clientError = `Content must be under ${MAX_CONTENT_LENGTH} characters.`;
+			clientError = `Inhalt muss unter ${MAX_CONTENT_LENGTH} Zeichen sein.`;
 			cancel();
 			return;
 		}
 
 		if (trimmedTitle.length > MAX_TITLE_LENGTH) {
-			clientError = `Title must be under ${MAX_TITLE_LENGTH} characters.`;
+			clientError = `Titel muss unter ${MAX_TITLE_LENGTH} Zeichen sein.`;
 			cancel();
 			return;
 		}
 
 		const password = formData.get('password');
 		if (typeof password === 'string' && password.length > MAX_PASSWORD_LENGTH) {
-			clientError = `Password must be under ${MAX_PASSWORD_LENGTH} characters.`;
+			clientError = `Passwort muss unter ${MAX_PASSWORD_LENGTH} Zeichen sein.`;
 			cancel();
 			return;
 		}
@@ -126,7 +126,7 @@
 			formData.set('title', '');
 		} catch (error) {
 			console.error('Encryption failed:', error);
-			clientError = 'Failed to encrypt this paste.';
+			clientError = 'Verschlüsselung fehlgeschlagen.';
 			cancel();
 			return;
 		} finally {
@@ -161,9 +161,10 @@
 <main class="relative mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-16">
 	<header class="flex flex-col gap-4">
 		<p class="text-xs tracking-[0.35em] text-emerald-300/70 uppercase">whiserpbin</p>
-		<h1 class="text-4xl font-semibold text-emerald-100">Encrypted snippets that vanish</h1>
+		<h1 class="text-4xl font-semibold text-emerald-100">Verschlüsselte Pastes, die vanishen.</h1>
 		<p class="max-w-xl text-sm text-emerald-100/70">
-			Share secrets safely. Client-side encryption, optional passwords, and self-destructing pastes.
+			Teile Secrets oder Texte. Client-seitige AES-Verschlüsselung, optionale Passwörter und
+			selbstzerstörende Pastes.
 		</p>
 		<div class="flex flex-wrap gap-3 text-xs text-emerald-200/70">
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
@@ -182,7 +183,7 @@
 			class="rounded-2xl border border-amber-500/30 bg-amber-950/40 px-4 py-3 text-sm text-amber-200"
 			role="alert"
 		>
-			JavaScript is required to encrypt and create a paste.
+			JavaScript wird benötigt, um Pastes zu verschlüsseln und zu erstellen.
 		</div>
 	</noscript>
 
@@ -215,8 +216,8 @@
 			<span class="h-2 w-2 rounded-full bg-rose-500/80"></span>
 			<span class="h-2 w-2 rounded-full bg-amber-400/80"></span>
 			<span class="h-2 w-2 rounded-full bg-emerald-400/80"></span>
-			<span class="ml-2 tracking-[0.3em] uppercase">New Paste</span>
-			<span class="ml-auto text-emerald-300/60">session online</span>
+			<span class="ml-2 tracking-[0.3em] uppercase">Neuer Paste</span>
+			<span class="ml-auto text-emerald-300/60">Sitzung aktiv</span>
 		</div>
 
 		<div class="flex flex-col gap-2">
@@ -224,12 +225,12 @@
 				class="text-xs font-semibold tracking-[0.25em] text-emerald-200/70 uppercase"
 				for="title"
 			>
-				Title (optional)
+				Titel (optional)
 			</label>
 			<input
 				id="title"
 				name="title"
-				placeholder="Untitled snippet"
+				placeholder="Total geheimes Geheimnis"
 				maxlength={MAX_TITLE_LENGTH}
 				class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 				bind:value={titleValue}
@@ -241,7 +242,7 @@
 				class="text-xs font-semibold tracking-[0.25em] text-emerald-200/70 uppercase"
 				for="content"
 			>
-				Paste
+				Inhalt
 			</label>
 			<textarea
 				id="content"
@@ -249,7 +250,7 @@
 				rows="12"
 				required
 				maxlength={MAX_CONTENT_LENGTH}
-				placeholder="Paste your content here..."
+				placeholder="Füge deinen Inhalt hier ein..."
 				class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 				bind:value={contentValue}
 			></textarea>
@@ -261,14 +262,14 @@
 					class="text-xs font-semibold tracking-[0.25em] text-emerald-200/70 uppercase"
 					for="expiresIn"
 				>
-					Expires in
+					Läuft ab in
 				</label>
 				<select
 					id="expiresIn"
 					name="expiresIn"
 					required
 					bind:value={selectedExpiry}
-					class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
+					class="cursor-pointer rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 				>
 					{#each EXPIRATION_OPTIONS as option (option.value)}
 						<option value={option.value}>
@@ -282,14 +283,14 @@
 					class="text-xs font-semibold tracking-[0.25em] text-emerald-200/70 uppercase"
 					for="language"
 				>
-					File type
+					Dateityp
 				</label>
 				<select
 					id="language"
 					name="language"
 					required
 					bind:value={selectedLanguage}
-					class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
+					class="cursor-pointer rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 				>
 					{#each LANGUAGE_OPTIONS as option (option.value)}
 						<option value={option.value}>
@@ -305,7 +306,7 @@
 				class="text-xs font-semibold tracking-[0.25em] text-emerald-200/70 uppercase"
 				for="password"
 			>
-				Password (optional)
+				Passwort (optional)
 			</label>
 			<input
 				id="password"
@@ -313,27 +314,27 @@
 				type="password"
 				autocomplete="new-password"
 				maxlength={MAX_PASSWORD_LENGTH}
-				placeholder="Protect this paste"
+				placeholder="Diesen Paste schützen"
 				class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
 			/>
-			<p class="text-xs text-emerald-200/50">Leave blank for public access.</p>
+			<p class="text-xs text-emerald-200/50">Leer lassen für öffentlichen Zugang.</p>
 		</div>
 
 		<label
 			class="flex cursor-pointer items-start gap-3 rounded-xl border border-emerald-500/20 bg-black/30 px-4 py-3 text-sm text-emerald-100/80"
 		>
 			<input
-				class="mt-1 h-4 w-4 rounded border-emerald-500/40 bg-black/40 text-emerald-300 focus:ring-emerald-400/40"
+				class="mt-1 h-4 w-4 cursor-pointer rounded border-emerald-500/40 bg-black/40 text-emerald-300 focus:ring-emerald-400/40"
 				type="checkbox"
 				name="onetime"
 				bind:checked={onetimeEnabled}
 			/>
 			<span class="flex flex-col gap-1">
 				<span class="text-xs font-semibold tracking-[0.25em] text-emerald-200 uppercase">
-					Delete after first view
+					Nach erstem Aufruf löschen
 				</span>
 				<span class="text-xs text-emerald-200/50">
-					Viewer must confirm before the paste is revealed.
+					Der Betrachter muss bestätigen, bevor der Paste angezeigt wird.
 				</span>
 			</span>
 		</label>
@@ -343,7 +344,7 @@
 			disabled={encrypting}
 			class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 shadow-[0_0_0_rgba(82,255,174,0)] transition hover:-translate-y-0.5 hover:bg-emerald-200 hover:shadow-[0_16px_30px_-18px_rgba(82,255,174,0.8)]"
 		>
-			{encrypting ? 'Encrypting...' : 'Create paste'}
+			{encrypting ? 'Verschlüssele...' : 'Paste erstellen'}
 		</button>
 	</form>
 
@@ -354,8 +355,8 @@
 			<div
 				class="flex flex-wrap items-center justify-between gap-3 text-xs tracking-[0.2em] text-emerald-200/70 uppercase"
 			>
-				<span>Link ready</span>
-				<span>TTL {selectedExpiry}</span>
+				<span>Link bereit</span>
+				<span>GÜLTIG {selectedExpiry}</span>
 			</div>
 			<div class="mt-3 flex flex-wrap items-center gap-3">
 				<a
@@ -375,15 +376,16 @@
 					onclick={copyShareUrl}
 					class="inline-flex cursor-pointer items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-950/40 px-3 py-1 text-xs tracking-[0.2em] text-emerald-200 uppercase transition hover:border-emerald-200 hover:text-emerald-100"
 				>
-					{copied ? 'Copied' : 'Copy'}
+					{copied ? 'Kopiert' : 'Kopieren'}
 				</button>
 				<span class="sr-only" aria-live="polite">
-					{copied ? 'Link copied to clipboard.' : ''}
+					{copied ? 'Link in Zwischenablage kopiert.' : ''}
 				</span>
 			</div>
 
 			<p class="mt-3 text-xs text-emerald-200/60">
-				This link contains the encryption key. Anyone with it can decrypt the paste.
+				Dieser Link enthält den Verschlüsselungsschlüssel. Jeder mit diesem Link kann den Paste
+				entschlüsseln.
 			</p>
 		</section>
 	{/if}
