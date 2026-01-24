@@ -20,22 +20,23 @@ Anyone with the full URL can decrypt the paste, so share carefully.
 
 ## Requirements
 
-- Bun 1.0+
+- Bun 1.0+ (runtime for SQLite)
+- pnpm 9+
 
 ## Local Development
 
 ```bash
-bun install
-bun dev
+pnpm install
+pnpm dev
 ```
 
 ## Scripts
 
 ```bash
-bun run build
-bun start
-bun lint
-bun check
+pnpm build
+pnpm start
+pnpm lint
+pnpm check
 ```
 
 ## Configuration

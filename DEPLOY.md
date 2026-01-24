@@ -2,9 +2,9 @@
 
 ## Build & Run
 
-- Build command: `bun run build`
-- Start command: `bun start`
-- Runtime: Bun 1.0+
+- Build command: `pnpm build`
+- Start command: `pnpm start`
+- Runtime: Bun 1.0+ (required for SQLite)
 
 ## Environment
 
@@ -23,7 +23,7 @@
 Run once after first deploy (or after schema changes):
 
 ```bash
-bun db:push
+pnpm db:push
 ```
 
 ## Proxy Notes
