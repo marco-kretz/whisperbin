@@ -30,8 +30,8 @@
 	let { data, form }: PageProps = $props();
 
 	const pasteContent = $derived(form?.content ?? data.paste.content ?? '');
-	const isLocked = $derived(data.paste.requiresPassword && !pasteContent);
 	const isOnetime = $derived(data.paste.onetime);
+	const isLocked = $derived(data.paste.requiresPassword && !pasteContent && !isOnetime);
 	const shouldReveal = $derived(!isOnetime || Boolean(form?.content));
 	const createdAt = $derived(new Date(data.paste.createdAt));
 	const expiresAt = $derived(new Date(data.paste.expiresAt));
