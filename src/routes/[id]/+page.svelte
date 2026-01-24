@@ -35,6 +35,7 @@
 	let { data, form }: PageProps = $props();
 
 	let copied = $state(false);
+	let lastHighlighted = $state('');
 	let passwordValue = $state('');
 	let decryptedContent = $state('');
 	let decryptedTitle = $state<string | null>(null);
@@ -86,16 +87,13 @@
 
 		blocks.forEach((block) => {
 			const element = block as HTMLElement;
-
-			if (element.dataset.highlighted) return;
-
+			element.dataset.highlighted = '';
+			element.textContent = pasteContent;
 			hljs.highlightElement(element);
 		});
 	};
 
 	onMount(() => {
-		highlight();
-
 		const updateKey = () => {
 			const hash = window.location.hash.startsWith('#')
 				? window.location.hash.slice(1)
@@ -113,7 +111,8 @@
 	});
 
 	$effect(() => {
-		if (!isLocked && shouldReveal && pasteContent) {
+		if (!isLocked && shouldReveal && pasteContent && pasteContent !== lastHighlighted) {
+			lastHighlighted = pasteContent;
 			highlight();
 		}
 	});
@@ -209,7 +208,7 @@
 				</div>
 			{/if}
 
-			<form method="POST" action="?/unlock" class="mt-4 flex flex-col gap-3">
+			<form method="POST" action="?/unlock" use:consumeEnhance class="mt-4 flex flex-col gap-3">
 				<input
 					name="password"
 					type="password"
