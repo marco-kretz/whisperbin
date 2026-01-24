@@ -43,13 +43,14 @@ const normalizeAddress = (value: string) => {
 	return value;
 };
 
+const MAX_IP_LENGTH = 45; // Max IPv6 length
+
 const normalizeIp = (value: string | null) => {
 	if (!value) return null;
 	const trimmed = value.trim();
-	if (!trimmed) return null;
+	if (!trimmed || trimmed.length > MAX_IP_LENGTH) return null;
 	const normalized = normalizeAddress(trimmed);
-	if (!normalized) return null;
-	if (normalized.length > 200) return null;
+	if (!normalized || normalized.length > MAX_IP_LENGTH) return null;
 	if (isIP(normalized) === 0) return null;
 	return normalized;
 };

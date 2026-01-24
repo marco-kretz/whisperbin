@@ -174,8 +174,9 @@ export const consumePasteWithPassword = async (
 	return { error: null, record: updated ? record : null };
 };
 
-export const deleteExpiredPastes = async () =>
-	db.delete(paste).where(lte(paste.expiresAt, new Date()));
+export const deleteExpiredPastes = async () => {
+	await db.delete(paste).where(lte(paste.expiresAt, new Date()));
+};
 
 export const isPasteExpired = (record: PasteRecord) =>
 	record.expiresAt.getTime() <= Date.now() || Boolean(record.consumedAt);

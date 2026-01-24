@@ -1,13 +1,18 @@
 import { sequence } from '@sveltejs/kit/hooks';
 import type { HandleServerError, Handle } from '@sveltejs/kit';
 
+import { env } from '$env/dynamic/private';
 import { checkRateLimit, getClientIdentifier } from '$lib/server/rate-limit';
 
 const RATE_LIMIT_WINDOW_MS = 60000;
 const RATE_LIMIT_MAX_REQUESTS = 30;
 
 export const handleError: HandleServerError = ({ error }) => {
-	console.error('Server error:', error);
+	if (env.NODE_ENV === 'production') {
+		console.error('Server error occurred');
+	} else {
+		console.error('Server error:', error);
+	}
 	return {
 		message: 'An error occurred'
 	};

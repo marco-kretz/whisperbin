@@ -9,6 +9,7 @@ import type { Actions, PageServerLoad } from './$types';
 const MAX_CIPHERTEXT_LENGTH = 120000;
 const MAX_PASSWORD_LENGTH = 200;
 const MAX_TITLE_LENGTH = 120;
+const MAX_BODY_SIZE = 256 * 1024; // 256KB
 const IV_LENGTH = 16;
 const BASE64URL_PATTERN = /^[A-Za-z0-9_-]+$/;
 
@@ -27,6 +28,11 @@ export const actions: Actions = {
 	default: async (event) => {
 		const clientIdentifier = getClientIdentifier(event);
 		const { request } = event;
+
+		const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+		if (contentLength > MAX_BODY_SIZE) {
+			return fail(413, { error: 'Anfrage ist zu groß.' });
+		}
 
 		if (!(await checkRateLimit(clientIdentifier, 10, 60000))) {
 			return fail(429, { error: 'Zu viele Anfragen. Bitte versuche es später erneut.' });
