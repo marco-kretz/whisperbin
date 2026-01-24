@@ -8,6 +8,7 @@ export const paste = sqliteTable(
 			.$defaultFn(() => crypto.randomUUID()),
 		title: text('title'),
 		content: text('content').notNull(),
+		contentIv: text('content_iv'),
 		language: text('language').notNull(),
 		createdAt: integer('created_at', { mode: 'timestamp' })
 			.notNull()

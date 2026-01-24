@@ -16,6 +16,7 @@ type CreatePasteInput = {
 	id: string;
 	title: string | null;
 	content: string;
+	contentIv: string | null;
 	language: string;
 	expiresAt: Date;
 	onetime: boolean;
@@ -51,6 +52,7 @@ export const createPaste = async ({
 	id,
 	title,
 	content,
+	contentIv,
 	language,
 	expiresAt,
 	onetime,
@@ -69,6 +71,7 @@ export const createPaste = async ({
 		id,
 		title,
 		content,
+		contentIv,
 		language,
 		expiresAt,
 		onetime,
@@ -94,6 +97,7 @@ export const consumePasteById = async (id: string) => {
 		.set({
 			consumedAt: new Date(),
 			content: '',
+			contentIv: null,
 			passwordHash: null,
 			passwordSalt: null
 		})
@@ -159,6 +163,7 @@ export const consumePasteWithPassword = async (
 		.set({
 			consumedAt: new Date(),
 			content: '',
+			contentIv: null,
 			passwordHash: null,
 			passwordSalt: null
 		})

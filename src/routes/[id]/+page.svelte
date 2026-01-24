@@ -1,24 +1,29 @@
 <script lang="ts">
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import hljs from 'highlight.js';
+
 	import { enhance } from '$app/forms';
 	import { onMount, tick } from 'svelte';
-	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { Action } from 'svelte/action';
 
-	import hljs from 'highlight.js';
+	import { decryptPayload } from '$lib/crypto';
 
 	type PastePayload = {
 		id: string;
 		title: string | null;
 		content: string | null;
+		contentIv: string | null;
 		language: string;
 		createdAt: string | Date;
 		expiresAt: string | Date;
 		onetime: boolean;
 		requiresPassword: boolean;
+		encrypted: boolean;
 	};
 
 	type ActionForm = {
 		content?: string;
+		contentIv?: string;
 		error?: string;
 	} | null;
 
@@ -29,15 +34,29 @@
 
 	let { data, form }: PageProps = $props();
 
-	const pasteContent = $derived(form?.content ?? data.paste.content ?? '');
-	const isOnetime = $derived(data.paste.onetime);
-	const isLocked = $derived(data.paste.requiresPassword && !pasteContent && !isOnetime);
-	const shouldReveal = $derived(!isOnetime || Boolean(form?.content));
-	const createdAt = $derived(new Date(data.paste.createdAt));
-	const expiresAt = $derived(new Date(data.paste.expiresAt));
-	const lineCount = $derived(pasteContent ? pasteContent.split('\n').length : 0);
 	let copied = $state(false);
 	let passwordValue = $state('');
+	let decryptedContent = $state('');
+	let decryptedTitle = $state<string | null>(null);
+	let decryptError = $state<string | null>(null);
+	let keyFromHash = $state<string | null>(null);
+
+	const plainContent = $derived(form?.content ?? data.paste.content ?? '');
+	const cipherText = $derived(form?.content ?? data.paste.content ?? '');
+	const cipherIv = $derived(form?.contentIv ?? data.paste.contentIv ?? '');
+	const isEncrypted = $derived(Boolean(data.paste.encrypted));
+	const hasCipherPayload = $derived(Boolean(cipherText && cipherIv));
+	const isOnetime = $derived(data.paste.onetime);
+	const hasPayload = $derived(isEncrypted ? hasCipherPayload : Boolean(plainContent));
+	const shouldReveal = $derived(!isOnetime || hasPayload);
+	const isLocked = $derived(data.paste.requiresPassword && !hasPayload && !isOnetime);
+	const createdAt = $derived(new Date(data.paste.createdAt));
+	const expiresAt = $derived(new Date(data.paste.expiresAt));
+	const pasteContent = $derived(isEncrypted ? decryptedContent : plainContent);
+	const displayTitle = $derived(
+		isEncrypted ? (decryptedTitle ?? 'Encrypted paste') : (data.paste.title ?? 'Untitled paste')
+	);
+	const lineCount = $derived(pasteContent ? pasteContent.split('\n').length : 0);
 
 	const consumeSubmit: SubmitFunction = () => {
 		return async ({ result, update }) => {
@@ -76,25 +95,78 @@
 
 	onMount(() => {
 		highlight();
+
+		const updateKey = () => {
+			const hash = window.location.hash.startsWith('#')
+				? window.location.hash.slice(1)
+				: window.location.hash;
+			const params = new URLSearchParams(hash);
+			keyFromHash = params.get('key');
+		};
+
+		updateKey();
+		window.addEventListener('hashchange', updateKey);
+
+		return () => {
+			window.removeEventListener('hashchange', updateKey);
+		};
 	});
 
 	$effect(() => {
-		if (!isLocked && shouldReveal) {
+		if (!isLocked && shouldReveal && pasteContent) {
 			highlight();
 		}
+	});
+
+	const decryptIfPossible = async (
+		activeCipherText: string,
+		activeCipherIv: string,
+		activeKey: string | null
+	) => {
+		if (!activeCipherText || !activeCipherIv) {
+			decryptError = null;
+			return;
+		}
+
+		if (!activeKey) {
+			decryptError = 'Missing encryption key.';
+			return;
+		}
+
+		try {
+			decryptError = null;
+			const payload = await decryptPayload({
+				cipherText: activeCipherText,
+				iv: activeCipherIv,
+				key: activeKey
+			});
+			decryptedContent = payload.content;
+			decryptedTitle = payload.title;
+		} catch (error) {
+			console.error('Decryption failed:', error);
+			decryptError = 'Unable to decrypt this paste.';
+		}
+	};
+
+	$effect(() => {
+		if (!isEncrypted) return;
+		const activeCipherText = cipherText;
+		const activeCipherIv = cipherIv;
+		const activeKey = keyFromHash;
+		decryptedContent = '';
+		decryptedTitle = null;
+		void decryptIfPossible(activeCipherText, activeCipherIv, activeKey);
 	});
 </script>
 
 <svelte:head>
-	<title>{data.paste.title ?? 'Paste It'}</title>
+	<title>{displayTitle ?? 'Paste It'}</title>
 </svelte:head>
 
 <main class="relative mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-16">
 	<header class="flex flex-col gap-4">
 		<p class="text-xs tracking-[0.35em] text-emerald-300/70 uppercase">Paste It Terminal</p>
-		<h1 class="text-4xl font-semibold text-emerald-100">
-			{data.paste.title ?? 'Untitled paste'}
-		</h1>
+		<h1 class="text-4xl font-semibold text-emerald-100">{displayTitle}</h1>
 		<div class="flex flex-wrap gap-3 text-xs text-emerald-200/70">
 			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
 				ID {data.paste.id}
@@ -212,9 +284,15 @@
 					</span>
 				</div>
 			</div>
-			<pre class="overflow-x-auto px-4 py-5 text-sm leading-relaxed">
-				<code class={`language-${data.paste.language}`}>{pasteContent}</code>
-			</pre>
+			{#if decryptError}
+				<div class="px-4 py-5 text-sm text-rose-200" role="alert">
+					{decryptError}
+				</div>
+			{:else}
+				<pre class="overflow-x-auto px-4 py-5 text-sm leading-relaxed">
+					<code class={`language-${data.paste.language}`}>{pasteContent}</code>
+				</pre>
+			{/if}
 		</section>
 	{/if}
 </main>

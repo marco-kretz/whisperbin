@@ -14,17 +14,20 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const requiresPassword = Boolean(record.passwordHash || record.passwordSalt);
 	const shouldHideContent = record.onetime || requiresPassword;
+	const encrypted = Boolean(record.contentIv);
 
 	return {
 		paste: {
 			id: record.id,
-			title: record.title,
+			title: encrypted ? null : record.title,
 			content: shouldHideContent ? null : record.content,
+			contentIv: shouldHideContent ? null : record.contentIv,
 			language: record.language,
 			createdAt: record.createdAt,
 			expiresAt: record.expiresAt,
 			onetime: record.onetime,
-			requiresPassword
+			requiresPassword,
+			encrypted
 		}
 	};
 };
@@ -43,7 +46,10 @@ export const actions: Actions = {
 			if (record.onetime) {
 				return fail(400, { error: 'Use the one-time reveal action to access this paste.' });
 			}
-			return { content: record.content };
+			return {
+				content: record.content,
+				contentIv: record.contentIv
+			};
 		}
 
 		const clientIdentifier = getClientIdentifier(request);
@@ -74,7 +80,10 @@ export const actions: Actions = {
 				throw error(404, 'Unable to find paste');
 			}
 
-			return { content: result.record.content };
+			return {
+				content: result.record.content,
+				contentIv: result.record.contentIv
+			};
 		}
 
 		const verified = await import('$lib/server/paste').then((m) =>
@@ -86,7 +95,10 @@ export const actions: Actions = {
 			return fail(400, { error: 'Access denied.' });
 		}
 
-		return { content: record.content };
+		return {
+			content: record.content,
+			contentIv: record.contentIv
+		};
 	},
 	consume: async ({ params, request }) => {
 		const record = await getPasteOrDeleteIfExpired(params.id);
@@ -123,6 +135,9 @@ export const actions: Actions = {
 			throw error(404, 'Unable to find paste');
 		}
 
-		return { content: result.record.content };
+		return {
+			content: result.record.content,
+			contentIv: result.record.contentIv
+		};
 	}
 };

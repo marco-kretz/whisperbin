@@ -1,5 +1,9 @@
 <script lang="ts">
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+
+	import { encryptPayload } from '$lib/crypto';
 	import { EXPIRATION_OPTIONS, LANGUAGE_OPTIONS } from '$lib/paste-options';
 
 	type FormValues = {
@@ -8,6 +12,7 @@
 		expiresIn?: string | null;
 		language?: string | null;
 		onetime?: string | null;
+		encrypted?: string | null;
 	};
 
 	type ActionForm = {
@@ -21,6 +26,10 @@
 		form: ActionForm;
 	};
 
+	const MAX_TITLE_LENGTH = 120;
+	const MAX_CONTENT_LENGTH = 20000;
+	const MAX_PASSWORD_LENGTH = 200;
+
 	let { data, form }: PageProps = $props();
 
 	const values = $derived(form?.values ?? {});
@@ -29,6 +38,9 @@
 	let onetimeEnabled = $state(false);
 	let titleValue = $state('');
 	let contentValue = $state('');
+	let encryptionKey = $state<string | null>(null);
+	let clientError = $state<string | null>(null);
+	let encrypting = $state(false);
 
 	$effect(() => {
 		if (values.expiresIn) {
@@ -43,12 +55,14 @@
 			onetimeEnabled = values.onetime === 'on';
 		}
 
-		if (values.title !== undefined) {
-			titleValue = values.title ?? '';
-		}
+		if (values.encrypted !== '1') {
+			if (values.title !== undefined) {
+				titleValue = values.title ?? '';
+			}
 
-		if (values.content !== undefined) {
-			contentValue = values.content ?? '';
+			if (values.content !== undefined) {
+				contentValue = values.content ?? '';
+			}
 		}
 	});
 	const selectedExpiryLabel = $derived(
@@ -59,8 +73,76 @@
 	);
 	const onetimeLabel = $derived(onetimeEnabled ? 'ONE-TIME' : 'STANDARD');
 	const sharePath = $derived(form?.id ? `/${form.id}` : null);
-	const shareUrl = $derived(sharePath ? `${data.origin}${resolve(sharePath as '/')}` : null);
+	const shareUrl = $derived(
+		sharePath && encryptionKey
+			? `${data.origin}${resolve(sharePath as '/')}#key=${encryptionKey}`
+			: null
+	);
 	let copied = $state(false);
+
+	const encryptSubmit: SubmitFunction = async ({ formData, cancel }) => {
+		clientError = null;
+		encryptionKey = null;
+
+		const trimmedTitle = titleValue.trim();
+		const trimmedContent = contentValue.trim();
+
+		if (!trimmedContent) {
+			clientError = 'Content is required.';
+			cancel();
+			return;
+		}
+
+		if (trimmedContent.length > MAX_CONTENT_LENGTH) {
+			clientError = `Content must be under ${MAX_CONTENT_LENGTH} characters.`;
+			cancel();
+			return;
+		}
+
+		if (trimmedTitle.length > MAX_TITLE_LENGTH) {
+			clientError = `Title must be under ${MAX_TITLE_LENGTH} characters.`;
+			cancel();
+			return;
+		}
+
+		const password = formData.get('password');
+		if (typeof password === 'string' && password.length > MAX_PASSWORD_LENGTH) {
+			clientError = `Password must be under ${MAX_PASSWORD_LENGTH} characters.`;
+			cancel();
+			return;
+		}
+
+		try {
+			encrypting = true;
+			const encrypted = await encryptPayload({
+				title: trimmedTitle.length > 0 ? trimmedTitle : null,
+				content: contentValue
+			});
+
+			encryptionKey = encrypted.key;
+			formData.set('content', encrypted.cipherText);
+			formData.set('contentIv', encrypted.iv);
+			formData.set('encrypted', '1');
+			formData.set('title', '');
+		} catch (error) {
+			console.error('Encryption failed:', error);
+			clientError = 'Failed to encrypt this paste.';
+			cancel();
+			return;
+		} finally {
+			encrypting = false;
+		}
+
+		return async ({ result, update }) => {
+			if (result.type === 'success') {
+				titleValue = '';
+				contentValue = '';
+			}
+			await update();
+		};
+	};
+
+	const encryptEnhance = (formElement: HTMLFormElement) => enhance(formElement, encryptSubmit);
 
 	const copyShareUrl = async () => {
 		if (!shareUrl) return;
@@ -96,6 +178,15 @@
 		</div>
 	</header>
 
+	{#if clientError}
+		<div
+			class="rounded-2xl border border-red-500/30 bg-red-950/50 px-4 py-3 text-sm text-red-200"
+			role="alert"
+		>
+			{clientError}
+		</div>
+	{/if}
+
 	{#if form?.error}
 		<div
 			class="rounded-2xl border border-red-500/30 bg-red-950/50 px-4 py-3 text-sm text-red-200"
@@ -107,6 +198,7 @@
 
 	<form
 		method="POST"
+		use:encryptEnhance
 		class="flex flex-col gap-6 rounded-2xl border border-emerald-500/20 bg-black/40 p-6 shadow-[0_0_0_1px_rgba(98,243,174,0.12),0_30px_80px_rgba(0,0,0,0.6)]"
 	>
 		<div
@@ -237,9 +329,10 @@
 
 		<button
 			type="submit"
+			disabled={encrypting}
 			class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 shadow-[0_0_0_rgba(82,255,174,0)] transition hover:-translate-y-0.5 hover:bg-emerald-200 hover:shadow-[0_16px_30px_-18px_rgba(82,255,174,0.8)]"
 		>
-			Create paste
+			{encrypting ? 'Encrypting...' : 'Create paste'}
 		</button>
 	</form>
 
@@ -257,6 +350,12 @@
 				<a
 					class="block text-sm break-all text-emerald-100"
 					href={resolve((sharePath ?? '/') as '/')}
+					onclick={(event) => {
+						event.preventDefault();
+						if (shareUrl) {
+							window.location.href = shareUrl;
+						}
+					}}
 				>
 					{shareUrl}
 				</a>
@@ -273,7 +372,7 @@
 			</div>
 
 			<p class="mt-3 text-xs text-emerald-200/60">
-				This paste is read-only and will self-destruct automatically.
+				This link contains the encryption key. Anyone with it can decrypt the paste.
 			</p>
 		</section>
 	{/if}
