@@ -20,8 +20,8 @@ Anyone with the full URL can decrypt the paste, so share carefully.
 
 ## Requirements
 
-- Bun 1.0+ (runtime for SQLite)
-- pnpm 9+
+- Node.js 22+
+- pnpm
 
 ## Local Development
 
@@ -33,7 +33,7 @@ pnpm dev
 ## Scripts
 
 ```bash
-pnpm build
+pnpm run build
 pnpm start
 pnpm lint
 pnpm check
@@ -46,7 +46,8 @@ Environment variables:
 - `DATABASE_URL` - SQLite file path (example: `/data/local.db`)
 - `RATE_LIMIT_REDIS_URL` - Redis connection string for rate limiting (required in production)
 - `TRUSTED_PROXY_IPS` - Comma-separated proxy IPs allowed to set `X-Forwarded-For`
-- `BODY_SIZE_LIMIT` - Max request body size for the Bun adapter (example: `256K`)
+- `PORT` - Server port (defaults to 3000)
+- `HOST` - Server host (defaults to 0.0.0.0)
 
 ## Limits (Defaults)
 
