@@ -1,6 +1,21 @@
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const passwordAttemptMap = new Map<string, { count: number; resetTime: number }>();
 
+const cleanupMap = (map: Map<string, { count: number; resetTime: number }>) => {
+	const now = Date.now();
+	for (const [key, entry] of map) {
+		if (now > entry.resetTime) {
+			map.delete(key);
+		}
+	}
+};
+
+const CLEANUP_INTERVAL = 60000;
+setInterval(() => {
+	cleanupMap(rateLimitMap);
+	cleanupMap(passwordAttemptMap);
+}, CLEANUP_INTERVAL).unref();
+
 export const checkRateLimit = (
 	identifier: string,
 	maxRequests: number,
