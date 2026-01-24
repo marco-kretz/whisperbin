@@ -5,6 +5,8 @@ import type { Actions, PageServerLoad } from './$types';
 
 import { addDelay, checkPasswordRateLimit, getClientIdentifier } from '$lib/server/rate-limit';
 
+const MAX_PASSWORD_LENGTH = 200;
+
 export const load: PageServerLoad = async ({ params }) => {
 	const record = await getPasteOrDeleteIfExpired(params.id);
 
@@ -33,7 +35,8 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	unlock: async ({ params, request }) => {
+	unlock: async (event) => {
+		const { params, request } = event;
 		const record = await getPasteOrDeleteIfExpired(params.id);
 
 		if (!record) {
@@ -52,7 +55,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const clientIdentifier = getClientIdentifier(request);
+		const clientIdentifier = getClientIdentifier(event);
 		if (!checkPasswordRateLimit(clientIdentifier)) {
 			return fail(429, { error: 'Too many attempts. Please try again later.' });
 		}
@@ -60,6 +63,11 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const password = formData.get('password');
 		const passwordValue = typeof password === 'string' ? password : null;
+
+		if (passwordValue && passwordValue.length > MAX_PASSWORD_LENGTH) {
+			await addDelay();
+			return fail(400, { error: `Password must be under ${MAX_PASSWORD_LENGTH} characters.` });
+		}
 
 		if (!passwordValue || !passwordValue.trim()) {
 			await addDelay();
@@ -100,7 +108,8 @@ export const actions: Actions = {
 			contentIv: record.contentIv
 		};
 	},
-	consume: async ({ params, request }) => {
+	consume: async (event) => {
+		const { params, request } = event;
 		const record = await getPasteOrDeleteIfExpired(params.id);
 
 		if (!record) {
@@ -111,7 +120,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Paste is not one-time.' });
 		}
 
-		const clientIdentifier = getClientIdentifier(request);
+		const clientIdentifier = getClientIdentifier(event);
 		if (record.passwordHash || record.passwordSalt) {
 			if (!checkPasswordRateLimit(clientIdentifier)) {
 				return fail(429, { error: 'Too many attempts. Please try again later.' });
@@ -121,6 +130,11 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const password = formData.get('password');
 		const passwordValue = typeof password === 'string' ? password : null;
+
+		if (passwordValue && passwordValue.length > MAX_PASSWORD_LENGTH) {
+			await addDelay();
+			return fail(400, { error: `Password must be under ${MAX_PASSWORD_LENGTH} characters.` });
+		}
 
 		const result = await consumePasteWithPassword(record.id, passwordValue);
 

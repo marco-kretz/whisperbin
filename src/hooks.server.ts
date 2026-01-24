@@ -14,7 +14,7 @@ export const handleError: HandleServerError = ({ error }) => {
 };
 
 export const handle: Handle = sequence(async ({ event, resolve }) => {
-	const clientIdentifier = getClientIdentifier(event.request);
+	const clientIdentifier = getClientIdentifier(event);
 
 	if (!checkRateLimit(clientIdentifier, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS)) {
 		return new Response('Too many requests. Please try again later.', {
@@ -36,7 +36,10 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
 		'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()'
 	);
 	response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-	response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+	const contentType = response.headers.get('content-type') ?? '';
+	if (contentType.includes('text/html')) {
+		response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+	}
 
 	return response;
 });

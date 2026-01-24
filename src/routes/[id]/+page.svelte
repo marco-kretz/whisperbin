@@ -191,6 +191,14 @@
 			</span>
 		</div>
 	</header>
+	<noscript>
+		<div
+			class="rounded-2xl border border-amber-500/30 bg-amber-950/40 px-4 py-3 text-sm text-amber-200"
+			role="alert"
+		>
+			JavaScript is required to decrypt and view encrypted pastes.
+		</div>
+	</noscript>
 
 	{#if isLocked}
 		<section

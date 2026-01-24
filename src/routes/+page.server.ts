@@ -8,6 +8,8 @@ import type { Actions, PageServerLoad } from './$types';
 
 const MAX_CIPHERTEXT_LENGTH = 120000;
 const MAX_PASSWORD_LENGTH = 200;
+const IV_LENGTH = 16;
+const BASE64URL_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 const normalizeOptionalString = (value: FormDataEntryValue | null): string | null => {
 	if (value === null) return null;
@@ -21,8 +23,9 @@ export const load: PageServerLoad = async ({ url }) => ({
 });
 
 export const actions: Actions = {
-	default: async ({ request }) => {
-		const clientIdentifier = getClientIdentifier(request);
+	default: async (event) => {
+		const clientIdentifier = getClientIdentifier(event);
+		const { request } = event;
 
 		if (!checkRateLimit(clientIdentifier, 10, 60000)) {
 			return fail(429, { error: 'Too many requests. Please try again later.' });
@@ -40,7 +43,12 @@ export const actions: Actions = {
 		const password = normalizeOptionalString(formData.get('password'));
 		const onetime = formData.get('onetime') === 'on';
 
-		if (!encrypted || !contentIv) {
+		const hasValidIv =
+			typeof contentIv === 'string' &&
+			contentIv.length === IV_LENGTH &&
+			BASE64URL_PATTERN.test(contentIv);
+
+		if (!encrypted || !contentIv || !hasValidIv) {
 			return fail(400, {
 				error: 'End-to-end encryption is required.',
 				values: {
