@@ -27,7 +27,6 @@
 		"@tailwindcss/vite": "^4.1.18",
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/node": "^22.19.7",
-		"drizzle-orm": "^0.45.1",
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.14.0",
@@ -45,6 +44,7 @@
 	"dependencies": {
 		"better-sqlite3": "^12.6.2",
 		"drizzle-kit": "^0.31.8",
+		"drizzle-orm": "^0.45.1",
 		"highlight.js": "^11.11.1",
 		"isomorphic-dompurify": "^2.35.0",
 		"redis": "^5.10.0"
