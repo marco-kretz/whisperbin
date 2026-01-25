@@ -57,7 +57,9 @@
 	const expiresAt = $derived(new Date(data.paste.expiresAt));
 	const pasteContent = $derived(isEncrypted ? decryptedContent : plainContent);
 	const displayTitle = $derived(
-		isEncrypted ? (decryptedTitle ?? 'Verschlüsselter Paste') : (data.paste.title ?? 'Unbenannter Paste')
+		isEncrypted
+			? (decryptedTitle ?? 'Verschlüsselter Paste')
+			: (data.paste.title ?? 'Unbenannter Paste')
 	);
 	const lineCount = $derived(pasteContent ? pasteContent.split('\n').length : 0);
 
@@ -212,7 +214,9 @@
 			class="rounded-2xl border border-emerald-500/20 bg-black/40 p-6 shadow-[0_0_0_1px_rgba(98,243,174,0.12),0_30px_80px_rgba(0,0,0,0.6)]"
 		>
 			<h2 class="text-lg font-semibold text-emerald-100">Passwort erforderlich</h2>
-			<p class="mt-2 text-sm text-emerald-100/60">Gib das Passwort ein, um diesen Paste freizuschalten.</p>
+			<p class="mt-2 text-sm text-emerald-100/60">
+				Gib das Passwort ein, um diesen Paste freizuschalten.
+			</p>
 
 			{#if form?.error}
 				<div

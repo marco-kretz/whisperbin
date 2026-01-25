@@ -48,10 +48,12 @@ Set these in Coolify's Environment Variables section:
 ## Redis Setup
 
 ### Option 1: Use Coolify's Redis Service
+
 1. Create a Redis resource in Coolify
 2. Use the connection string provided by Coolify for `RATE_LIMIT_REDIS_URL`
 
 ### Option 2: Use Docker Compose Redis
+
 - If using Docker Compose deployment, Redis is included in `docker-compose.yml`
 - Set `RATE_LIMIT_REDIS_URL=redis://redis:6379`
 
@@ -63,6 +65,7 @@ After first deployment, initialize the database schema:
 2. Run: `pnpm db:push`
 
 Or use Coolify's "Execute Command" feature:
+
 - Command: `pnpm db:push`
 - Run this once after first deploy or after schema changes
 

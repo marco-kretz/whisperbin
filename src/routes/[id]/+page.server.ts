@@ -47,7 +47,9 @@ export const actions: Actions = {
 
 		if (!requiresPassword) {
 			if (record.onetime) {
-				return fail(400, { error: 'Nutze die Einmal-Anzeige-Funktion, um diesen Paste aufzurufen.' });
+				return fail(400, {
+					error: 'Nutze die Einmal-Anzeige-Funktion, um diesen Paste aufzurufen.'
+				});
 			}
 			return {
 				content: record.content,
