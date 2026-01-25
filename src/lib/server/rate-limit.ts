@@ -135,11 +135,11 @@ const checkRedisRateLimit = async (
 	try {
 		const count = await redis.incr(key);
 		if (count === 1) {
-			await redis.pexpire(key, windowMs);
+			await redis.pExpire(key, windowMs);
 		} else {
-			const ttl = await redis.pttl(key);
+			const ttl = await redis.pTTL(key);
 			if (typeof ttl === 'number' && ttl < 0) {
-				await redis.pexpire(key, windowMs);
+				await redis.pExpire(key, windowMs);
 			}
 		}
 		return count <= maxRequests;

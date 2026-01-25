@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 </script>
 
 <svelte:head>
@@ -7,7 +8,7 @@
 
 <main class="relative mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-16">
 	<a
-		href="/"
+		href={resolve('/')}
 		class="text-xs tracking-[0.25em] text-emerald-300/70 uppercase hover:text-emerald-200"
 	>
 		&larr; Zurück
