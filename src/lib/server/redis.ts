@@ -35,7 +35,13 @@ export const getRedisClient = async () => {
 		return null;
 	}
 
-	if (client && client.isOpen) return client;
+	if (client?.isOpen) return client;
+
+	// Connection dropped or never established - reset state for fresh connection
+	if (client && !client.isOpen) {
+		client = null;
+		connectionPromise = null;
+	}
 
 	if (!connectionPromise) {
 		connectionPromise = connectRedis()
@@ -45,6 +51,7 @@ export const getRedisClient = async () => {
 			})
 			.catch((error) => {
 				console.error('Redis connection error:', error);
+				client = null;
 				connectionPromise = null;
 				return null;
 			});
