@@ -58,7 +58,7 @@
 	const pasteContent = $derived(isEncrypted ? decryptedContent : plainContent);
 	const displayTitle = $derived(
 		isEncrypted
-			? (decryptedTitle ?? 'Verschlusselte Nachricht')
+			? (decryptedTitle ?? 'Verschlüsselte Nachricht')
 			: (data.paste.title ?? 'Unbenannte Nachricht')
 	);
 	const lineCount = $derived(pasteContent ? pasteContent.split('\n').length : 0);
@@ -123,7 +123,7 @@
 			return;
 		}
 		if (!activeKey) {
-			decryptError = 'Verschlusselungsschlussel fehlt.';
+			decryptError = 'Verschlüsselungsschlüssel fehlt.';
 			return;
 		}
 		try {
@@ -137,7 +137,7 @@
 			decryptedTitle = payload.title;
 		} catch (error) {
 			console.error('Decryption failed:', error);
-			decryptError = 'Diese Nachricht konnte nicht entschlusselt werden.';
+			decryptError = 'Diese Nachricht konnte nicht entschlüsselt werden.';
 		}
 	};
 
@@ -186,7 +186,7 @@
 				<span class="text-danger">Einmalig</span>
 			{/if}
 			<span>Erstellt {formatDate(createdAt)}</span>
-			<span>Lauft ab {formatDate(expiresAt)}</span>
+			<span>Läuft ab {formatDate(expiresAt)}</span>
 		</div>
 	</header>
 

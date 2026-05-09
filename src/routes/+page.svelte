@@ -109,7 +109,7 @@
 			formData.set('title', '');
 		} catch (error) {
 			console.error('Encryption failed:', error);
-			clientError = 'Verschlusselung fehlgeschlagen. Bitte versuche es erneut.';
+			clientError = 'Verschlüsselung fehlgeschlagen. Bitte versuche es erneut.';
 			cancel();
 			return;
 		} finally {
@@ -210,7 +210,7 @@
 					rows="10"
 					required
 					maxlength={MAX_CONTENT_LENGTH}
-					placeholder="Fuge deine Nachricht hier ein …"
+					placeholder="Füge deine Nachricht hier ein …"
 					class="resize-y rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 					bind:value={contentValue}
 				></textarea>
@@ -219,7 +219,7 @@
 			<div class="grid gap-4 sm:grid-cols-2">
 				<div class="flex flex-col gap-2">
 					<label class="text-xs font-semibold tracking-wide text-muted uppercase" for="expiresIn"
-						>Lauft ab in</label
+						>Läuft ab in</label
 					>
 					<select
 						id="expiresIn"
@@ -261,7 +261,7 @@
 					type="password"
 					autocomplete="new-password"
 					maxlength={MAX_PASSWORD_LENGTH}
-					placeholder="Zusatzlicher Passwortschutz"
+					placeholder="Zusätzlicher Passwortschutz"
 					class="rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 				/>
 				<p class="text-xs text-muted">
@@ -279,7 +279,7 @@
 				<span class="flex flex-col gap-1">
 					<span class="text-sm font-medium text-primary">Nach erstem Aufruf löschen</span>
 					<span class="text-xs text-muted">
-						Die Nachricht wird dauerhaft gelöscht, sobald sie jemand offnet.
+						Die Nachricht wird dauerhaft gelöscht, sobald sie jemand öffnet.
 					</span>
 				</span>
 			</label>

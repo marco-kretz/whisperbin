@@ -11,12 +11,12 @@
 		href={resolve('/')}
 		class="text-xs font-medium tracking-wide text-muted uppercase transition-colors hover:text-secondary"
 	>
-		← Zuruck
+		← Zurück
 	</a>
 
 	<header class="flex flex-col gap-2">
-		<h1 class="text-2xl">Datenschutzerklarung</h1>
-		<p class="text-sm text-secondary">Gemass DSGVO</p>
+		<h1 class="text-2xl">Datenschutzerklärung</h1>
+		<p class="text-sm text-secondary">Gemäß DSGVO</p>
 	</header>
 
 	<section class="flex flex-col gap-8 text-sm leading-relaxed text-secondary">
@@ -27,18 +27,18 @@
 			<p>
 				Marco Kretz<br />
 				Disternicher Weg 1a<br />
-				52391 Vettweiss<br />
+				52391 Vettweiß<br />
 				Deutschland<br />
 				E-Mail: hallo@marco-kretz.de
 			</p>
 		</div>
 
 		<div class="flex flex-col gap-1.5">
-			<h2 class="text-xs font-semibold tracking-wide text-primary uppercase">2. Uberblick</h2>
+			<h2 class="text-xs font-semibold tracking-wide text-primary uppercase">2. Überblick</h2>
 			<p>
 				Diese Website wurde mit Datenschutz im Blick entwickelt. Alle Nachrichteninhalte werden
 				clientseitig verschlüsselt, bevor sie übertragen werden. Der Verschlüsselungsschlüssel
-				verlässt niemals deinen Browser und wird nur uber das URL-Fragment geteilt (welches nicht an
+				verlässt niemals deinen Browser und wird nur über das URL-Fragment geteilt (welches nicht an
 				den Server gesendet wird).
 			</p>
 		</div>
@@ -63,7 +63,7 @@
 				<div>
 					<strong class="text-primary">Nachrichteninhalte:</strong> Beim Erstellen speichern wir:
 					<ul class="mt-2 ml-4 list-disc">
-						<li>Verschlusselten Inhalt (ohne Schlüssel nicht lesbar)</li>
+						<li>Verschlüsselten Inhalt (ohne Schlüssel nicht lesbar)</li>
 						<li>Ablaufzeit</li>
 						<li>Format-Einstellung</li>
 						<li>Passwort-Hash (falls passwortgeschützt)</li>
@@ -90,7 +90,7 @@
 		<div class="flex flex-col gap-1.5">
 			<h2 class="text-xs font-semibold tracking-wide text-primary uppercase">6. Hosting</h2>
 			<p>
-				Diese Website wird bei netcup GmbH, Emmy-Noether-Strasse 10, 76131 Karlsruhe gehostet.
+				Diese Website wird bei netcup GmbH, Emmy-Noether-Straße 10, 76131 Karlsruhe gehostet.
 				Weitere Informationen:
 				<a href="https://www.netcup.com/de/kontakt/datenschutzerklaerung" class="underline">
 					www.netcup.com/de/kontakt/datenschutzerklaerung</a
@@ -105,8 +105,8 @@
 				<ul class="ml-4 list-disc">
 					<li>Auskunft (Art. 15 DSGVO)</li>
 					<li>Berichtigung (Art. 16 DSGVO)</li>
-					<li>Loschung (Art. 17 DSGVO)</li>
-					<li>Einschrankung (Art. 18 DSGVO)</li>
+					<li>Löschung (Art. 17 DSGVO)</li>
+					<li>Einschränkung (Art. 18 DSGVO)</li>
 					<li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
 					<li>Widerspruch (Art. 21 DSGVO)</li>
 				</ul>
@@ -119,7 +119,7 @@
 		<div class="flex flex-col gap-1.5">
 			<h2 class="text-xs font-semibold tracking-wide text-primary uppercase">8. Änderungen</h2>
 			<p>
-				Wir können diese Datenschutzerklarung von Zeit zu Zeit aktualisieren. Die aktuelle Version
+				Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren. Die aktuelle Version
 				ist immer auf dieser Seite verfügbar.
 			</p>
 			<p class="text-muted">Stand: Januar 2025</p>
