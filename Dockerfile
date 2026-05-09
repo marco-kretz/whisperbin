@@ -9,13 +9,15 @@ RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 RUN apk add --no-cache python3 make g++
 
 COPY package.json pnpm-lock.yaml* ./
+COPY scripts/prepare.mjs ./scripts/prepare.mjs
 RUN pnpm install --frozen-lockfile
 
 COPY . .
 
 # Create data directory before build to avoid database initialization errors
 # Set a dummy DATABASE_URL for build if not provided
-ENV DATABASE_URL=${DATABASE_URL:-:memory:}
+ARG DATABASE_URL=:memory:
+ENV DATABASE_URL=$DATABASE_URL
 RUN mkdir -p /data || true
 
 RUN pnpm run build
