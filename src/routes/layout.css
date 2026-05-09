@@ -1,14 +1,22 @@
 @import 'tailwindcss';
-@import 'highlight.js/styles/github-dark.css';
+@import 'highlight.js/styles/monokai.css';
 
-:root {
-	color-scheme: dark;
-	--terminal-bg: #050807;
-	--terminal-panel: #0a1310;
-	--terminal-grid: rgba(82, 255, 174, 0.08);
-	--terminal-accent: #62f3ae;
-	--terminal-accent-strong: #b8ffd7;
-	--terminal-danger: #ff8c8c;
+@theme {
+	--color-canvas: #070504;
+	--color-surface: #0d0a07;
+	--color-surface-hover: #16120e;
+	--color-line: #1e1a15;
+	--color-line-strong: #2a2520;
+	--color-accent: #c9a84c;
+	--color-accent-hover: #ddbe68;
+	--color-accent-dim: rgba(201, 168, 76, 0.08);
+	--color-success: #6b9e7a;
+	--color-success-dim: rgba(107, 158, 122, 0.08);
+	--color-danger: #b87070;
+	--color-danger-dim: rgba(184, 112, 112, 0.08);
+	--color-primary: #e8e2d9;
+	--color-secondary: #7a7265;
+	--color-muted: #4a433a;
 }
 
 html,
@@ -18,59 +26,43 @@ body {
 
 body {
 	font-family:
-		ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-		monospace;
-	background-color: var(--terminal-bg);
-	color: #d2e6dc;
-	position: relative;
-	isolation: isolate;
+		ui-sans-serif,
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		Roboto,
+		sans-serif;
+	background-color: var(--color-canvas);
+	color: var(--color-primary);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	line-height: 1.6;
 }
 
-.app-shell {
-	display: contents;
-}
-
-body::before {
-	content: '';
-	position: fixed;
-	inset: 0;
-	background-image:
-		radial-gradient(circle at top, rgba(98, 243, 174, 0.08), transparent 45%),
-		linear-gradient(90deg, transparent 0%, rgba(98, 243, 174, 0.08) 50%, transparent 100%),
-		linear-gradient(0deg, transparent 0%, rgba(98, 243, 174, 0.04) 50%, transparent 100%);
-	opacity: 0.55;
-	pointer-events: none;
-	z-index: -1;
-}
-
-body::after {
-	content: '';
-	position: fixed;
-	inset: 0;
-	background-image: repeating-linear-gradient(
-		180deg,
-		rgba(98, 243, 174, 0.08) 0px,
-		rgba(98, 243, 174, 0.08) 1px,
-		transparent 1px,
-		transparent 3px
-	);
-	opacity: 0.15;
-	mix-blend-mode: screen;
-	pointer-events: none;
-	z-index: -1;
+h1,
+h2,
+h3 {
+	font-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+	color: var(--color-primary);
 }
 
 a {
-	color: var(--terminal-accent);
+	color: var(--color-accent);
+	transition: color 0.15s ease;
+	text-decoration: none;
 }
 
 a:hover {
-	color: var(--terminal-accent-strong);
+	color: var(--color-accent-hover);
 }
 
 ::selection {
-	background: rgba(98, 243, 174, 0.4);
-	color: #04110a;
+	background: rgba(201, 168, 76, 0.25);
+	color: #fff;
 }
 
 pre code {

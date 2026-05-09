@@ -1,25 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <title>whiserpbin</title>
-  <!-- Background circle -->
-  <circle cx="64" cy="64" r="60" fill="#050807" stroke="#62f3ae" stroke-width="3" stroke-opacity="0.3"/>
-
-  <!-- Document/paste shape -->
-  <path d="M44 28h28l16 16v56a4 4 0 0 1-4 4H44a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4z" fill="#0a1310" stroke="#62f3ae" stroke-width="2" stroke-opacity="0.5"/>
-
-  <!-- Document fold corner -->
-  <path d="M72 28v12a4 4 0 0 0 4 4h12" fill="none" stroke="#62f3ae" stroke-width="2" stroke-opacity="0.5"/>
-
-  <!-- Lock body -->
-  <rect x="50" y="62" width="28" height="24" rx="3" fill="#62f3ae"/>
-
-  <!-- Lock shackle -->
-  <path d="M54 62V54a10 10 0 0 1 20 0v8" fill="none" stroke="#62f3ae" stroke-width="4" stroke-linecap="round"/>
-
-  <!-- Keyhole -->
-  <circle cx="64" cy="72" r="4" fill="#050807"/>
-  <path d="M64 74v6" stroke="#050807" stroke-width="3" stroke-linecap="round"/>
-
-  <!-- Encrypted text lines (above lock) -->
-  <rect x="48" y="50" width="20" height="2" rx="1" fill="#62f3ae" fill-opacity="0.4"/>
-  <rect x="48" y="54" width="14" height="2" rx="1" fill="#62f3ae" fill-opacity="0.3"/>
+  <title>whisperbin</title>
+  <rect width="128" height="128" fill="#070504"/>
+  <rect x="16" y="16" width="96" height="96" fill="none" stroke="#c9a84c" stroke-width="3" opacity="0.4"/>
+  <rect x="24" y="40" width="80" height="56" fill="none" stroke="#c9a84c" stroke-width="2"/>
+  <path d="M24 40 L64 20 L104 40" fill="none" stroke="#c9a84c" stroke-width="2"/>
+  <circle cx="64" cy="76" r="5" fill="#c9a84c" opacity="0.6"/>
+  <rect x="61" y="76" width="6" height="10" fill="#c9a84c" opacity="0.6"/>
 </svg>

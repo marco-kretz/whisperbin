@@ -58,8 +58,8 @@
 	const pasteContent = $derived(isEncrypted ? decryptedContent : plainContent);
 	const displayTitle = $derived(
 		isEncrypted
-			? (decryptedTitle ?? 'Verschlüsselter Paste')
-			: (data.paste.title ?? 'Unbenannter Paste')
+			? (decryptedTitle ?? 'Verschlusselte Nachricht')
+			: (data.paste.title ?? 'Unbenannte Nachricht')
 	);
 	const lineCount = $derived(pasteContent ? pasteContent.split('\n').length : 0);
 
@@ -69,7 +69,6 @@
 				await update({ invalidateAll: false });
 				return;
 			}
-
 			await update();
 		};
 	};
@@ -80,15 +79,12 @@
 		if (!pasteContent) return;
 		await navigator.clipboard.writeText(pasteContent);
 		copied = true;
-		setTimeout(() => {
-			copied = false;
-		}, 1500);
+		setTimeout(() => (copied = false), 1500);
 	};
 
 	const highlight = async () => {
 		await tick();
 		const blocks = document.querySelectorAll('pre code');
-
 		blocks.forEach((block) => {
 			const element = block as HTMLElement;
 			element.dataset.highlighted = '';
@@ -105,13 +101,9 @@
 			const params = new URLSearchParams(hash);
 			keyFromHash = params.get('key');
 		};
-
 		updateKey();
 		window.addEventListener('hashchange', updateKey);
-
-		return () => {
-			window.removeEventListener('hashchange', updateKey);
-		};
+		return () => window.removeEventListener('hashchange', updateKey);
 	});
 
 	$effect(() => {
@@ -130,12 +122,10 @@
 			decryptError = null;
 			return;
 		}
-
 		if (!activeKey) {
-			decryptError = 'Verschlüsselungsschlüssel fehlt.';
+			decryptError = 'Verschlusselungsschlussel fehlt.';
 			return;
 		}
-
 		try {
 			decryptError = null;
 			const payload = await decryptPayload({
@@ -147,7 +137,7 @@
 			decryptedTitle = payload.title;
 		} catch (error) {
 			console.error('Decryption failed:', error);
-			decryptError = 'Dieser Paste konnte nicht entschlüsselt werden.';
+			decryptError = 'Diese Nachricht konnte nicht entschlusselt werden.';
 		}
 	};
 
@@ -160,164 +150,175 @@
 		decryptedTitle = null;
 		void decryptIfPossible(activeCipherText, activeCipherIv, activeKey);
 	});
+
+	function formatDate(date: Date): string {
+		return date.toLocaleDateString('de-DE', {
+			day: '2-digit',
+			month: '2-digit',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+	}
 </script>
 
 <svelte:head>
-	<title>{displayTitle} · whiserpbin</title>
+	<title>{displayTitle} - whisperbin</title>
 </svelte:head>
 
-<main class="relative mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-16">
-	<header class="flex flex-col gap-4">
-		<a
-			href={resolve(rootPath)}
-			class="text-xs tracking-[0.35em] text-emerald-300/70 uppercase transition-colors hover:text-emerald-200"
-		>
-			whiserpbin
-		</a>
-		<h1 class="text-4xl font-semibold text-emerald-100">{displayTitle}</h1>
-		<div class="flex flex-wrap gap-3 text-xs text-emerald-200/70">
-			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				ID {data.paste.id}
-			</span>
-			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				SPRACHE {data.paste.language}
-			</span>
-			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				ZEILEN {lineCount}
-			</span>
+<main class="mx-auto flex w-full max-w-xl flex-col gap-8 px-6 py-16">
+	<!-- Back -->
+	<a
+		href={resolve(rootPath)}
+		class="text-xs font-medium tracking-wide text-muted uppercase transition-colors hover:text-secondary"
+	>
+		← Neue Nachricht
+	</a>
+
+	<!-- Header -->
+	<header class="flex flex-col gap-3">
+		<h1 class="text-2xl">{displayTitle}</h1>
+		<div class="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted">
+			<span>{data.paste.id.slice(0, 8)}</span>
+			<span>{data.paste.language}</span>
+			<span>{lineCount} Zeilen</span>
 			{#if isOnetime}
-				<span
-					class="rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-rose-200/80"
-				>
-					EINMALIG
-				</span>
+				<span class="text-danger">Einmalig</span>
 			{/if}
-			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				Erstellt <time datetime={createdAt.toISOString()}>{createdAt.toLocaleString()}</time>
-			</span>
-			<span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-				Läuft ab <time datetime={expiresAt.toISOString()}>{expiresAt.toLocaleString()}</time>
-			</span>
+			<span>Erstellt {formatDate(createdAt)}</span>
+			<span>Lauft ab {formatDate(expiresAt)}</span>
 		</div>
 	</header>
+
 	<noscript>
 		<div
-			class="rounded-2xl border border-amber-500/30 bg-amber-950/40 px-4 py-3 text-sm text-amber-200"
+			class="rounded-sm border border-line bg-canvas px-4 py-3 text-sm text-secondary"
 			role="alert"
 		>
-			JavaScript wird benötigt, um verschlüsselte Pastes zu entschlüsseln und anzuzeigen.
+			JavaScript wird benötigt, um verschlüsselte Nachrichten zu entschlüsseln.
 		</div>
 	</noscript>
 
+	<!-- Password locked -->
 	{#if isLocked}
-		<section
-			class="rounded-2xl border border-emerald-500/20 bg-black/40 p-6 shadow-[0_0_0_1px_rgba(98,243,174,0.12),0_30px_80px_rgba(0,0,0,0.6)]"
-		>
-			<h2 class="text-lg font-semibold text-emerald-100">Passwort erforderlich</h2>
-			<p class="mt-2 text-sm text-emerald-100/60">
-				Gib das Passwort ein, um diesen Paste freizuschalten.
-			</p>
-
-			{#if form?.error}
-				<div
-					class="mt-4 rounded-xl border border-red-500/30 bg-red-950/50 px-3 py-2 text-sm text-red-200"
-					role="alert"
-				>
-					{form.error}
+		<div class="flex gap-0">
+			<div class="hidden w-1 shrink-0 bg-accent sm:block"></div>
+			<section class="flex grow flex-col gap-5 border border-line bg-surface p-6 sm:px-8 sm:py-8">
+				<div>
+					<h2 class="text-lg">Passwort erforderlich</h2>
+					<p class="mt-1 text-sm text-secondary">
+						Gib das Passwort ein, um diese Nachricht zu entschlüsseln.
+					</p>
 				</div>
-			{/if}
 
-			<form method="POST" action="?/unlock" use:consumeEnhance class="mt-4 flex flex-col gap-3">
-				<input
-					name="password"
-					type="password"
-					autocomplete="current-password"
-					placeholder="Paste-Passwort"
-					class="rounded-lg border border-emerald-500/20 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/30 focus:outline-none"
-				/>
-				<button
-					type="submit"
-					class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200"
-				>
-					Paste freischalten
-				</button>
-			</form>
-		</section>
-	{:else if isOnetime && !shouldReveal}
-		<section
-			class="rounded-2xl border border-rose-500/30 bg-rose-950/20 p-6 shadow-[0_0_0_1px_rgba(244,63,94,0.15),0_30px_80px_rgba(0,0,0,0.6)]"
-		>
-			<h2 class="text-lg font-semibold text-rose-100">Einmaliger Paste</h2>
-			<p class="mt-2 text-sm text-rose-100/70">
-				Dieser Paste wird vom Server gelöscht, sobald du ihn anzeigst.
-			</p>
+				{#if form?.error}
+					<div
+						class="rounded-sm border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
+						role="alert"
+					>
+						{form.error}
+					</div>
+				{/if}
 
-			{#if form?.error}
-				<div
-					class="mt-4 rounded-xl border border-red-500/30 bg-red-950/50 px-3 py-2 text-sm text-red-200"
-					role="alert"
-				>
-					{form.error}
-				</div>
-			{/if}
-
-			<form method="POST" action="?/consume" use:consumeEnhance class="mt-4 flex flex-col gap-3">
-				{#if data.paste.requiresPassword}
+				<form method="POST" action="?/unlock" use:consumeEnhance class="flex flex-col gap-3">
 					<input
 						name="password"
 						type="password"
 						autocomplete="current-password"
-						placeholder="Paste-Passwort"
-						bind:value={passwordValue}
-						class="rounded-lg border border-rose-500/30 bg-black/40 px-3 py-2 text-sm text-emerald-100 placeholder:text-emerald-200/30 focus:border-rose-400/60 focus:ring-1 focus:ring-rose-400/40 focus:outline-none"
+						placeholder="Passwort eingeben"
+						class="rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 					/>
+					<button
+						type="submit"
+						class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-canvas transition-colors hover:bg-accent-hover"
+					>
+						Nachricht entsperren
+					</button>
+				</form>
+			</section>
+		</div>
+
+		<!-- One-time confirmation -->
+	{:else if isOnetime && !shouldReveal}
+		<div class="flex gap-0">
+			<div class="hidden w-1 shrink-0 bg-danger sm:block"></div>
+			<section class="flex grow flex-col gap-5 border border-line bg-surface p-6 sm:px-8 sm:py-8">
+				<div>
+					<h2 class="text-lg">Einmalige Nachricht</h2>
+					<p class="mt-1 text-sm text-secondary">
+						Diese Nachricht wird nach dem Öffnen dauerhaft gelöscht.
+					</p>
+				</div>
+
+				{#if form?.error}
+					<div
+						class="rounded-sm border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
+						role="alert"
+					>
+						{form.error}
+					</div>
 				{/if}
-				<button
-					type="submit"
-					class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-rose-300 px-4 py-2 text-sm font-semibold text-rose-950 transition hover:bg-rose-200"
-				>
-					Anzeigen und löschen
-				</button>
-			</form>
-		</section>
+
+				<form method="POST" action="?/consume" use:consumeEnhance class="flex flex-col gap-3">
+					{#if data.paste.requiresPassword}
+						<input
+							name="password"
+							type="password"
+							autocomplete="current-password"
+							placeholder="Passwort eingeben"
+							bind:value={passwordValue}
+							class="rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-danger focus:outline-none"
+						/>
+					{/if}
+					<button
+						type="submit"
+						class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-sm bg-danger px-5 py-2.5 text-sm font-semibold text-canvas transition-colors hover:opacity-90"
+					>
+						Anzeigen und löschen
+					</button>
+				</form>
+			</section>
+		</div>
+
+		<!-- Content display -->
 	{:else}
-		<section
-			class="overflow-hidden rounded-2xl border border-emerald-500/20 bg-black/50 shadow-[0_0_0_1px_rgba(98,243,174,0.12),0_30px_80px_rgba(0,0,0,0.6)]"
-		>
-			<div
-				class="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-500/15 px-4 py-3 text-xs tracking-[0.2em] text-emerald-200/70 uppercase"
-			>
-				<span>Ausgabe</span>
-				<div class="flex items-center gap-3">
-					<span>{data.paste.language}</span>
+		<section class="flex gap-0">
+			<div class="hidden w-1 shrink-0 bg-accent sm:block"></div>
+			<div class="flex grow flex-col overflow-hidden border border-line bg-surface">
+				<div
+					class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3"
+				>
+					<span class="font-mono text-xs text-muted">{data.paste.language}</span>
 					<button
 						type="button"
 						onclick={copyPasteContent}
-						class="cursor-pointer rounded-full border border-emerald-300/60 bg-emerald-950/40 px-3 py-1 text-[10px] tracking-[0.2em] text-emerald-200 transition hover:border-emerald-200 hover:text-emerald-100"
+						class="inline-flex cursor-pointer items-center rounded-sm border border-line bg-canvas px-3 py-1.5 font-mono text-xs tracking-wide text-secondary uppercase transition-colors hover:border-accent hover:text-accent"
 					>
-						{copied ? 'Kopiert' : 'Kopieren'}
+						{#if copied}
+							Kopiert
+						{:else}
+							Kopieren
+						{/if}
 					</button>
-					<span class="sr-only" aria-live="polite">
-						{copied ? 'Inhalt in Zwischenablage kopiert.' : ''}
-					</span>
 				</div>
+				{#if decryptError}
+					<div class="px-5 py-8 text-center text-sm text-danger" role="alert">
+						{decryptError}
+					</div>
+				{:else}
+					<pre class="overflow-x-auto px-5 py-5 text-sm leading-relaxed">
+						<code class={`language-${data.paste.language}`}>{pasteContent}</code>
+					</pre>
+				{/if}
 			</div>
-			{#if decryptError}
-				<div class="px-4 py-5 text-sm text-rose-200" role="alert">
-					{decryptError}
-				</div>
-			{:else}
-				<pre class="overflow-x-auto px-4 py-5 text-sm leading-relaxed">
-					<code class={`language-${data.paste.language}`}>{pasteContent}</code>
-				</pre>
-			{/if}
 		</section>
+
 		<div class="flex justify-end">
 			<a
 				href={resolve(rootPath)}
-				class="inline-flex items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-950/40 px-4 py-2 text-xs tracking-[0.2em] text-emerald-200 uppercase transition hover:border-emerald-200 hover:text-emerald-100"
+				class="inline-flex items-center rounded-sm border border-line bg-canvas px-4 py-2 text-xs font-semibold tracking-wide text-secondary uppercase transition-colors hover:border-accent hover:text-accent"
 			>
-				Eigenen Paste erstellen
+				Eigene Nachricht erstellen
 			</a>
 		</div>
 	{/if}

@@ -9,10 +9,14 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 {@render children()}
 
-<footer class="mt-auto border-t border-emerald-500/10 py-6 text-center text-xs text-emerald-200/40">
-	<div class="flex flex-wrap items-center justify-center gap-4">
-		<a href={resolve('/impressum')} class="hover:text-emerald-200/70">Impressum</a>
-		<span class="text-emerald-500/30">|</span>
-		<a href={resolve('/privacy')} class="hover:text-emerald-200/70">Datenschutz</a>
+<footer class="mt-auto border-t border-line px-6 py-8">
+	<div
+		class="mx-auto flex max-w-xl flex-wrap items-center justify-between gap-4 text-xs text-muted"
+	>
+		<span>whisperbin</span>
+		<div class="flex items-center gap-4">
+			<a href={resolve('/impressum')} class="hover:text-secondary">Impressum</a>
+			<a href={resolve('/privacy')} class="hover:text-secondary">Datenschutz</a>
+		</div>
 	</div>
 </footer>
