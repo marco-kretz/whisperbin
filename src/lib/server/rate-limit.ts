@@ -1,20 +1,9 @@
-import { isIP } from 'node:net';
-
 import type { RequestEvent } from '@sveltejs/kit';
-import { TRUSTED_PROXY_IPS } from '$app/env/private';
 
 import { getRedisClient } from './redis';
 
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const passwordAttemptMap = new Map<string, { count: number; resetTime: number }>();
-
-const DEFAULT_TRUSTED_PROXIES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
-const trustedProxyIps = new Set(
-	(TRUSTED_PROXY_IPS ?? '')
-		.split(',')
-		.map((value) => value.trim())
-		.filter(Boolean)
-);
 
 const cleanupMap = (map: Map<string, { count: number; resetTime: number }>) => {
 	const now = Date.now();
@@ -30,49 +19,6 @@ setInterval(() => {
 	cleanupMap(rateLimitMap);
 	cleanupMap(passwordAttemptMap);
 }, CLEANUP_INTERVAL).unref();
-
-const normalizeAddress = (value: string) => {
-	if (!value) return value;
-	if (value.startsWith('[')) {
-		const end = value.indexOf(']');
-		return end === -1 ? value : value.slice(1, end);
-	}
-	if (value.includes('.') && value.includes(':')) {
-		return value.split(':')[0] ?? value;
-	}
-	return value;
-};
-
-const MAX_IP_LENGTH = 45; // Max IPv6 length
-
-const normalizeIp = (value: string | null) => {
-	if (!value) return null;
-	const trimmed = value.trim();
-	if (!trimmed || trimmed.length > MAX_IP_LENGTH) return null;
-	const normalized = normalizeAddress(trimmed);
-	if (!normalized || normalized.length > MAX_IP_LENGTH) return null;
-	if (isIP(normalized) === 0) return null;
-	return normalized;
-};
-
-const getForwardedClient = (request: Request) => {
-	const forwarded = request.headers.get('x-forwarded-for');
-	if (forwarded) {
-		const candidate = forwarded.split(',')[0]?.trim();
-		const normalized = normalizeIp(candidate ?? null);
-		if (normalized) return normalized;
-	}
-	const realIp = request.headers.get('x-real-ip');
-	return normalizeIp(realIp?.trim() ?? null);
-};
-
-const isTrustedProxy = (address: string | null) => {
-	if (!address) return false;
-	if (trustedProxyIps.size > 0) {
-		return trustedProxyIps.has(address);
-	}
-	return DEFAULT_TRUSTED_PROXIES.has(address);
-};
 
 const sanitizeIdentifier = (identifier: string) => {
 	const trimmed = identifier.trim();
@@ -149,24 +95,14 @@ const checkRedisRateLimit = async (
 	}
 };
 
+// Proxy headers are resolved by adapter-node (ADDRESS_HEADER / XFF_DEPTH).
+// It throws if ADDRESS_HEADER is set but missing, e.g. requests bypassing Cloudflare.
 export const getClientIdentifier = (event: RequestEvent): string => {
-	let directAddress: string | null;
-
 	try {
-		directAddress = normalizeIp(event.getClientAddress());
+		return event.getClientAddress();
 	} catch {
-		directAddress = null;
+		return 'unknown';
 	}
-
-	const forwarded = getForwardedClient(event.request);
-
-	if (directAddress && forwarded && isTrustedProxy(directAddress)) {
-		return forwarded;
-	}
-
-	if (directAddress) return directAddress;
-
-	return 'unknown';
 };
 
 export const checkRateLimit = async (

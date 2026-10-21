@@ -33,8 +33,9 @@ Set these in Coolify's Environment Variables section:
 - `RATE_LIMIT_REDIS_URL` - Redis connection string (required in production)
   - For Docker Compose: `redis://redis:6379`
   - For standalone: Use Coolify's Redis service or external Redis URL
-- `TRUSTED_PROXY_IPS` - Comma-separated proxy IPs (example: `127.0.0.1,::1`)
-  - For Coolify: Typically `127.0.0.1,::1` or Coolify's internal network IPs
+- `ADDRESS_HEADER` - Header carrying the real client IP, used for rate limiting
+  - Behind Cloudflare: `CF-Connecting-IP` (only safe if the origin accepts traffic from Cloudflare only)
+  - Behind a plain reverse proxy: `X-Forwarded-For`, plus `XFF_DEPTH` = number of trusted proxies
 - `PORT` - Server port (defaults to 3000, adapter-node uses this env var)
 - `HOST` - Server host (defaults to 0.0.0.0)
 - `NODE_ENV` - Set to `production` (optional, defaults in Dockerfile)

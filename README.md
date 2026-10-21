@@ -57,7 +57,8 @@ Environment variables:
 - `DATABASE_URL` - SQLite file path (example: `/data/local.db`)
 - `RATE_LIMIT_REDIS_URL` - Redis connection string for rate limiting (required in production;
   `REDIS_URL` is used as a fallback)
-- `TRUSTED_PROXY_IPS` - Comma-separated proxy IPs allowed to set `X-Forwarded-For`
+- `ADDRESS_HEADER` - Header carrying the real client IP behind a proxy (e.g. `CF-Connecting-IP`,
+  see adapter-node docs)
 - `PORT` - Server port (defaults to 3000)
 - `HOST` - Server host (defaults to 0.0.0.0)
 

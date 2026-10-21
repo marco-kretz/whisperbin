@@ -34,7 +34,6 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
 	response.headers.set('X-Content-Type-Options', 'nosniff');
 	response.headers.set('X-Frame-Options', 'DENY');
 	response.headers.set('Referrer-Policy', 'no-referrer');
-	response.headers.set('X-XSS-Protection', '1; mode=block');
 	response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
 	response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
 	response.headers.set(
@@ -43,7 +42,8 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
 	);
 	response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
 	const contentType = response.headers.get('content-type') ?? '';
-	if (contentType.includes('text/html')) {
+	// JSON covers __data.json and form action responses, which carry ciphertext
+	if (contentType.includes('text/html') || contentType.includes('application/json')) {
 		response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 	}
 

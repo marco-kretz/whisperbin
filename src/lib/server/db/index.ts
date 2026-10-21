@@ -34,6 +34,8 @@ function getDb() {
 	}
 
 	_client = new Database(databaseUrl);
+	// Overwrite deleted rows on disk so consumed/expired ciphertext can't be recovered from the file
+	_client.pragma('secure_delete = ON');
 	_db = drizzle(_client, { schema });
 
 	return _db;

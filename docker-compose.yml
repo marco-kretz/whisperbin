@@ -6,7 +6,7 @@ services:
     environment:
       DATABASE_URL: /data/local.db
       RATE_LIMIT_REDIS_URL: redis://default:${REDIS_PASSWORD:-changeme}@redis:6379
-      TRUSTED_PROXY_IPS: 127.0.0.1,::1
+      ADDRESS_HEADER: ${ADDRESS_HEADER:-}
       NODE_ENV: production
       PORT: 3000
     ports:

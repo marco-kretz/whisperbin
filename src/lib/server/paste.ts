@@ -1,4 +1,5 @@
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
 
 import { and, eq, isNull, lte } from 'drizzle-orm';
 
@@ -23,24 +24,31 @@ type CreatePasteInput = {
 	password: string | null;
 };
 
+const scryptAsync = promisify(scrypt) as (
+	password: string,
+	salt: string,
+	keylen: number,
+	options: { N: number; r: number; p: number }
+) => Promise<Buffer>;
+
 const derivePasswordHash = (password: string, salt: string) =>
-	scryptSync(password, salt, PASSWORD_KEY_LENGTH, {
+	scryptAsync(password, salt, PASSWORD_KEY_LENGTH, {
 		N: SCRYPT_N,
 		r: SCRYPT_R,
 		p: SCRYPT_P
 	});
 
-const hashPassword = (password: string) => {
+const hashPassword = async (password: string) => {
 	const salt = randomBytes(16).toString('hex');
-	const hash = derivePasswordHash(password, salt).toString('hex');
+	const hash = (await derivePasswordHash(password, salt)).toString('hex');
 
 	return { salt, hash };
 };
 
-export const verifyPastePassword = (record: PasteRecord, password: string) => {
+export const verifyPastePassword = async (record: PasteRecord, password: string) => {
 	if (!record.passwordHash || !record.passwordSalt) return false;
 
-	const hashed = derivePasswordHash(password, record.passwordSalt);
+	const hashed = await derivePasswordHash(password, record.passwordSalt);
 	const storedHash = Buffer.from(record.passwordHash, 'hex');
 
 	if (storedHash.length !== hashed.length) return false;
@@ -62,7 +70,7 @@ export const createPaste = async ({
 	let passwordSalt: string | null = null;
 
 	if (password) {
-		const hashed = hashPassword(password);
+		const hashed = await hashPassword(password);
 		passwordHash = hashed.hash;
 		passwordSalt = hashed.salt;
 	}
@@ -133,7 +141,7 @@ export const consumePasteWithPassword = async (
 			return { error: 'Passwort ist erforderlich.', record: null };
 		}
 
-		const hashed = derivePasswordHash(password, record.passwordSalt);
+		const hashed = await derivePasswordHash(password, record.passwordSalt);
 		const storedHash = Buffer.from(record.passwordHash, 'hex');
 
 		if (storedHash.length !== hashed.length) {
