@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
 import { fail } from '@sveltejs/kit';
-import { getExpirationMs, isLanguageValue } from '$lib/paste-options';
-import { createPaste, deleteExpiredPastes } from '$lib/server/paste';
-import { checkRateLimit, getClientIdentifier } from '$lib/server/rate-limit';
+import { getExpirationMs, isLanguageValue } from '#lib/paste-options.js';
+import { createPaste, deleteExpiredPastes } from '#lib/server/paste.js';
+import { checkRateLimit, getClientIdentifier } from '#lib/server/rate-limit.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const MAX_CIPHERTEXT_LENGTH = 120000;

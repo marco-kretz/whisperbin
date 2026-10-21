@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance, type SubmitFunction } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import type { SubmitFunction } from '@sveltejs/kit';
 
-	import { encryptPayload } from '$lib/crypto';
-	import { EXPIRATION_OPTIONS, LANGUAGE_OPTIONS } from '$lib/paste-options';
+	import { encryptPayload } from '#lib/crypto.js';
+	import { EXPIRATION_OPTIONS, LANGUAGE_OPTIONS } from '#lib/paste-options.js';
 
 	type FormValues = {
 		title?: string | null;
@@ -55,10 +54,9 @@
 	const selectedExpiryLabel = $derived(
 		EXPIRATION_OPTIONS.find((o) => o.value === selectedExpiry)?.label ?? selectedExpiry
 	);
-	const sharePath = $derived(form?.id ? `/${form.id}` : null);
 	const shareUrl = $derived(
-		sharePath && encryptionKey
-			? `${data.origin}${resolve(sharePath as '/')}#key=${encryptionKey}`
+		form?.id && encryptionKey
+			? `${data.origin}${resolve('/[id]', { id: form.id })}#key=${encryptionKey}`
 			: null
 	);
 	let copied = $state(false);
@@ -212,8 +210,7 @@
 					maxlength={MAX_CONTENT_LENGTH}
 					placeholder="Füge deine Nachricht hier ein …"
 					class="resize-y rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
-					bind:value={contentValue}
-				></textarea>
+					bind:value={contentValue}></textarea>
 			</div>
 
 			<div class="grid gap-4 sm:grid-cols-2">

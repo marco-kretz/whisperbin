@@ -4,7 +4,7 @@ import Database from 'better-sqlite3';
 import { mkdirSync, existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 import * as schema from './schema';
-import { env } from '$env/dynamic/private';
+import { DATABASE_URL } from '$app/env/private';
 
 let _db: BetterSQLite3Database<typeof schema> | null = null;
 let _client: Database.Database | null = null;
@@ -12,11 +12,11 @@ let _client: Database.Database | null = null;
 function getDb() {
 	if (_db) return _db;
 
-	if (!env.DATABASE_URL) {
+	if (!DATABASE_URL) {
 		throw new Error('DATABASE_URL is not set');
 	}
 
-	const databaseUrl = env.DATABASE_URL.replace(/^sqlite:\/\//, '');
+	const databaseUrl = DATABASE_URL.replace(/^sqlite:\/\//, '');
 
 	// Use in-memory database if DATABASE_URL is set to :memory:
 	if (databaseUrl === ':memory:') {

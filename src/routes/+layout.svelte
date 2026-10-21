@@ -1,7 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import { resolve } from '$app/paths';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '#lib/assets/favicon.svg';
 
 	let { children } = $props();
 </script>
@@ -15,8 +15,8 @@
 	>
 		<span>whisperbin</span>
 		<div class="flex items-center gap-4">
-			<a href={resolve('/impressum')} class="hover:text-secondary">Impressum</a>
-			<a href={resolve('/privacy')} class="hover:text-secondary">Datenschutz</a>
+			<a href={resolve('impressum')} class="hover:text-secondary">Impressum</a>
+			<a href={resolve('privacy')} class="hover:text-secondary">Datenschutz</a>
 		</div>
 	</div>
 </footer>
