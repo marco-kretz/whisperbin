@@ -4,8 +4,10 @@ import { RATE_LIMIT_REDIS_URL, REDIS_URL } from '$app/env/private';
 const redisUrl = RATE_LIMIT_REDIS_URL ?? REDIS_URL ?? null;
 const isProduction = process.env.NODE_ENV === 'production';
 
-let client: ReturnType<typeof createClient> | null = null;
-let connectionPromise: Promise<ReturnType<typeof createClient> | null> | null = null;
+type RedisClient = Awaited<ReturnType<typeof connectRedis>>;
+
+let client: RedisClient = null;
+let connectionPromise: Promise<RedisClient> | null = null;
 let warnedMissing = false;
 
 const connectRedis = async () => {

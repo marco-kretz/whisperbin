@@ -27,7 +27,7 @@
 		"@sveltejs/load-config": "^0.2.2",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@tailwindcss/vite": "^4.3.3",
-		"@types/better-sqlite3": "^7.6.13",
+		"@types/better-sqlite3": "^9.6.0",
 		"@types/node": "^22.20.5",
 		"eslint": "^10.13.0",
 		"eslint-config-prettier": "^10.1.8",
@@ -48,7 +48,7 @@
 		"drizzle-kit": "^0.31.11",
 		"drizzle-orm": "^0.45.4",
 		"highlight.js": "^11.12.0",
-		"redis": "^5.12.1"
+		"redis": "^6.3.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
