@@ -26,6 +26,39 @@
 		form: ActionForm;
 	};
 
+	// Icon paths from Lucide (ISC license), 24x24 stroke icons
+	const FEATURES = [
+		{
+			title: 'Ende-zu-Ende verschlüsselt',
+			text: 'Verschlüsselung direkt in deinem Browser',
+			icon: [
+				'M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z',
+				'M7 11V7a5 5 0 0 1 10 0v4'
+			]
+		},
+		{
+			title: 'Schlüssel bleibt bei dir',
+			text: 'Er steckt nur im Link, nie auf dem Server',
+			icon: [
+				'm15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4',
+				'm21 2-9.6 9.6',
+				'M2 15.5a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0-11 0'
+			]
+		},
+		{
+			title: 'Automatisch gelöscht',
+			text: 'Nach Ablauf der gewählten Zeit',
+			icon: ['M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0', 'M12 6v6l4 2']
+		},
+		{
+			title: 'Einmal lesen, dann weg',
+			text: 'Optional nach dem ersten Aufruf löschen',
+			icon: [
+				'M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'
+			]
+		}
+	];
+
 	const MAX_TITLE_LENGTH = 120;
 	const MAX_CONTENT_LENGTH = 20000;
 	const MAX_PASSWORD_LENGTH = 200;
@@ -199,10 +232,34 @@
 			// whisperbin · e2e
 		</p>
 		<h1 class="text-4xl sm:text-5xl">Vertrauliche Nachrichten teilen</h1>
-		<p class="max-w-md text-sm leading-relaxed text-secondary">
-			Ende-zu-Ende verschlüsselt in deinem Browser. Der Schlüssel verlässt dein Gerät nie. Die
-			Nachricht löscht sich automatisch nach Ablauf.
-		</p>
+		<ul class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+			{#each FEATURES as feature (feature.title)}
+				<li class="flex items-start gap-3">
+					<span
+						class="flex h-9 w-9 shrink-0 items-center justify-center border border-line bg-surface text-accent"
+					>
+						<svg
+							class="h-4.5 w-4.5"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							{#each feature.icon as d (d)}
+								<path {d} />
+							{/each}
+						</svg>
+					</span>
+					<span class="flex flex-col gap-0.5">
+						<span class="text-sm font-medium text-primary">{feature.title}</span>
+						<span class="text-xs leading-relaxed text-muted">{feature.text}</span>
+					</span>
+				</li>
+			{/each}
+		</ul>
 	</header>
 
 	<!-- Errors -->
