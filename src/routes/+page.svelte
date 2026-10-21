@@ -210,8 +210,7 @@
 					maxlength={MAX_CONTENT_LENGTH}
 					placeholder="Füge deine Nachricht hier ein …"
 					class="resize-y rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
-					bind:value={contentValue}
-				></textarea>
+					bind:value={contentValue}></textarea>
 			</div>
 
 			<div class="grid gap-4 sm:grid-cols-2">

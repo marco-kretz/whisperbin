@@ -150,7 +150,7 @@ const checkRedisRateLimit = async (
 };
 
 export const getClientIdentifier = (event: RequestEvent): string => {
-	let directAddress: string | null = null;
+	let directAddress: string | null;
 
 	try {
 		directAddress = normalizeIp(event.getClientAddress());
