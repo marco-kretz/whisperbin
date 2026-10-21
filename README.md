@@ -27,8 +27,12 @@ Anyone with the full URL can decrypt the paste, so share carefully.
 
 ```bash
 pnpm install
+pnpm db:push
 pnpm dev
 ```
+
+Local defaults live in the committed `.env.development` (SQLite `local.db`, in-memory rate limits
+without Redis). Put personal overrides in `.env.development.local`.
 
 ## Scripts
 
