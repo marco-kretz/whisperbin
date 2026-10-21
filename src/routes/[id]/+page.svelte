@@ -227,7 +227,7 @@
 					/>
 					<button
 						type="submit"
-						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-2.5 font-display text-sm font-bold tracking-wider text-primary uppercase transition-colors cut hover:bg-primary hover:text-accent"
+						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-2.5 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary hover:text-ink"
 					>
 						Nachricht entsperren
 					</button>
@@ -270,7 +270,7 @@
 					{/if}
 					<button
 						type="submit"
-						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-danger px-5 py-2.5 font-display text-sm font-bold tracking-wider text-white uppercase transition-colors cut hover:bg-primary"
+						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-danger px-5 py-2.5 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary"
 					>
 						Anzeigen und löschen
 					</button>
@@ -289,7 +289,7 @@
 					<button
 						type="button"
 						onclick={copyPasteContent}
-						class="inline-flex cursor-pointer items-center border border-line bg-canvas px-3 py-1.5 font-display text-xs tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-amber"
+						class="inline-flex cursor-pointer items-center border border-line bg-canvas px-3 py-1.5 font-display text-xs tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 					>
 						{#if copied}
 							Kopiert
@@ -313,7 +313,7 @@
 		<div class="flex justify-end">
 			<a
 				href={resolve(rootPath)}
-				class="inline-flex items-center border border-line bg-canvas px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-amber"
+				class="inline-flex items-center border border-line bg-canvas px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 			>
 				Eigene Nachricht erstellen
 			</a>

@@ -322,7 +322,7 @@
 						<button
 							type="button"
 							onclick={regeneratePassword}
-							class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-accent"
+							class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 						>
 							{generatedPassword ? 'Neu generieren' : 'Generieren'}
 						</button>
@@ -330,14 +330,14 @@
 							<button
 								type="button"
 								onclick={insertGeneratedPassword}
-								class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-accent"
+								class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 							>
 								In Inhalt einfügen
 							</button>
 							<button
 								type="button"
 								onclick={copyGeneratedPassword}
-								class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-accent"
+								class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 							>
 								{generatedCopied ? 'Kopiert' : 'Kopieren'}
 							</button>
@@ -420,7 +420,7 @@
 			<button
 				type="submit"
 				disabled={encrypting}
-				class="inline-flex cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-3 font-display text-sm font-bold tracking-wider text-primary uppercase transition-colors cut hover:bg-primary hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+				class="inline-flex cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-3 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				{#if encrypting}
 					<svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -468,7 +468,7 @@
 					<button
 						type="button"
 						onclick={copyShareUrl}
-						class="inline-flex cursor-pointer items-center border border-line bg-canvas px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-amber"
+						class="inline-flex cursor-pointer items-center border border-line bg-canvas px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 					>
 						{#if copied}
 							Kopiert

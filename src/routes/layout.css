@@ -1,25 +1,27 @@
 @import 'tailwindcss';
-@import 'highlight.js/styles/base16/gruvbox-light-hard.css';
 
+/* Palette from the Akari Omarchy theme (github.com/marco-kretz/omarchy-theme-akari) */
 @theme {
 	--font-display: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
-	--color-canvas: #f3ead8;
-	--color-surface: #fffaf1;
-	--color-surface-hover: #fbf1df;
-	--color-line: #dccdb4;
-	--color-line-strong: #1f1611;
-	--color-accent: #f2541b;
-	--color-accent-hover: #d9440f;
-	--color-accent-dim: rgba(242, 84, 27, 0.1);
-	--color-hot: #e8285a;
-	--color-amber: #ffbe0b;
-	--color-success: #3f8a3a;
-	--color-success-dim: rgba(63, 138, 58, 0.1);
-	--color-danger: #d62839;
-	--color-danger-dim: rgba(214, 40, 57, 0.08);
-	--color-primary: #1f1611;
-	--color-secondary: #5e4e40;
-	--color-muted: #8c7a68;
+	--color-canvas: #161513;
+	--color-surface: #1c1b19;
+	--color-surface-hover: #302c28;
+	--color-line: #3d3733;
+	--color-line-strong: #e8dcc8;
+	--color-accent: #ff6b75;
+	--color-accent-hover: #ffb3a5;
+	--color-accent-dim: rgba(255, 107, 117, 0.12);
+	--color-hot: #ceb2ec;
+	--color-amber: #efd08a;
+	--color-success: #85d9c3;
+	--color-success-dim: rgba(133, 217, 195, 0.1);
+	--color-danger: #ff9585;
+	--color-danger-dim: rgba(255, 149, 133, 0.1);
+	--color-primary: #e8dcc8;
+	--color-secondary: #cbbda8;
+	--color-muted: #a79c8c;
+	/* Text on light or accent fills */
+	--color-ink: #161513;
 }
 
 /* Chamfered corners for buttons and badges */
@@ -98,6 +100,11 @@
 	}
 }
 
+/* Native controls (selects, scrollbars) render dark */
+html {
+	color-scheme: dark;
+}
+
 html,
 body {
 	min-height: 100%;
@@ -114,8 +121,8 @@ body {
 		sans-serif;
 	background-color: var(--color-canvas);
 	background-image:
-		linear-gradient(rgba(31, 22, 17, 0.045) 1px, transparent 1px),
-		linear-gradient(90deg, rgba(31, 22, 17, 0.045) 1px, transparent 1px);
+		linear-gradient(rgba(232, 220, 200, 0.035) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(232, 220, 200, 0.035) 1px, transparent 1px);
 	background-size: 32px 32px;
 	color: var(--color-primary);
 	-webkit-font-smoothing: antialiased;
@@ -145,10 +152,71 @@ a:hover {
 
 ::selection {
 	background: var(--color-amber);
-	color: var(--color-primary);
+	color: var(--color-ink);
 }
 
 pre code.hljs {
 	background: transparent;
 	padding: 0;
+}
+
+/* Syntax highlighting in Akari colors */
+.hljs {
+	color: var(--color-primary);
+}
+.hljs-comment,
+.hljs-quote {
+	color: var(--color-muted);
+	font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-meta .hljs-keyword {
+	color: #ceb2ec;
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-addition {
+	color: #85d9c3;
+}
+.hljs-number,
+.hljs-literal,
+.hljs-symbol,
+.hljs-bullet {
+	color: #f4b183;
+}
+.hljs-title,
+.hljs-section,
+.hljs-title.function_ {
+	color: #91bff2;
+}
+.hljs-type,
+.hljs-built_in,
+.hljs-title.class_,
+.hljs-class .hljs-title {
+	color: #efd08a;
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-property {
+	color: #a7dceb;
+}
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-deletion {
+	color: #ff9585;
+}
+.hljs-meta,
+.hljs-punctuation {
+	color: #c3a080;
+}
+.hljs-emphasis {
+	font-style: italic;
+}
+.hljs-strong {
+	font-weight: 700;
 }
