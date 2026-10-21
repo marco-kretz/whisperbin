@@ -1,9 +1,9 @@
 import { error, fail } from '@sveltejs/kit';
 
-import { consumePasteWithPassword, getPasteOrDeleteIfExpired } from '$lib/server/paste';
+import { consumePasteWithPassword, getPasteOrDeleteIfExpired } from '#lib/server/paste.js';
 import type { Actions, PageServerLoad } from './$types';
 
-import { addDelay, checkPasswordRateLimit, getClientIdentifier } from '$lib/server/rate-limit';
+import { addDelay, checkPasswordRateLimit, getClientIdentifier } from '#lib/server/rate-limit.js';
 
 const MAX_PASSWORD_LENGTH = 200;
 
@@ -96,7 +96,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const verified = await import('$lib/server/paste').then((m) =>
+		const verified = await import('#lib/server/paste.js').then((m) =>
 			m.verifyPastePassword(record, passwordValue)
 		);
 

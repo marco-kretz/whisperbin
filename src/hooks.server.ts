@@ -1,14 +1,15 @@
-import { sequence } from '@sveltejs/kit/hooks';
-import type { HandleServerError, Handle } from '@sveltejs/kit';
-
-import { env } from '$env/dynamic/private';
-import { checkRateLimit, getClientIdentifier } from '$lib/server/rate-limit';
+import { sequence, type HandleServerError, type Handle } from '@sveltejs/kit/hooks';
+import { NODE_ENV } from '$app/env/private';
+import { checkRateLimit, getClientIdentifier } from '#lib/server/rate-limit.js';
 
 const RATE_LIMIT_WINDOW_MS = 60000;
 const RATE_LIMIT_MAX_REQUESTS = 30;
 
-export const handleError: HandleServerError = ({ error }) => {
-	if (env.NODE_ENV === 'production') {
+export const handleError: HandleServerError = ({ error, kind }) => {
+	// SvelteKit 3 routes expected errors (e.g. error(404, ...)) here too; keep their messages
+	if (kind !== 'unknown') return;
+
+	if (NODE_ENV === 'production') {
 		console.error('Server error occurred');
 	} else {
 		console.error('Server error:', error);
@@ -24,9 +25,7 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
 	if (!(await checkRateLimit(clientIdentifier, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS))) {
 		return new Response('Too many requests. Please try again later.', {
 			status: 429,
-			headers: {
-				'Retry-After': '60'
-			}
+			headers: { 'Retry-After': '60' }
 		});
 	}
 

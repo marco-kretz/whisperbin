@@ -1,7 +1,7 @@
 import { isIP } from 'node:net';
 
 import type { RequestEvent } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { TRUSTED_PROXY_IPS } from '$app/env/private';
 
 import { getRedisClient } from './redis';
 
@@ -10,7 +10,7 @@ const passwordAttemptMap = new Map<string, { count: number; resetTime: number }>
 
 const DEFAULT_TRUSTED_PROXIES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 const trustedProxyIps = new Set(
-	(env.TRUSTED_PROXY_IPS ?? '')
+	(TRUSTED_PROXY_IPS ?? '')
 		.split(',')
 		.map((value) => value.trim())
 		.filter(Boolean)

@@ -1,7 +1,7 @@
 import { createClient } from 'redis';
-import { env } from '$env/dynamic/private';
+import { RATE_LIMIT_REDIS_URL, REDIS_URL } from '$app/env/private';
 
-const redisUrl = env.RATE_LIMIT_REDIS_URL ?? env.REDIS_URL ?? null;
+const redisUrl = RATE_LIMIT_REDIS_URL ?? REDIS_URL ?? null;
 const isProduction = process.env.NODE_ENV === 'production';
 
 let client: ReturnType<typeof createClient> | null = null;

@@ -1,13 +1,12 @@
 <script lang="ts">
-	import type { SubmitFunction } from '@sveltejs/kit';
 	import hljs from 'highlight.js';
 
-	import { enhance } from '$app/forms';
+	import { enhance, type SubmitFunction } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import { onMount, tick } from 'svelte';
 	import type { Action } from 'svelte/action';
 
-	import { decryptPayload } from '$lib/crypto';
+	import { decryptPayload } from '#lib/crypto.js';
 
 	type PastePayload = {
 		id: string;
