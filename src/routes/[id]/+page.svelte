@@ -165,18 +165,18 @@
 	<title>{displayTitle} - whisperbin</title>
 </svelte:head>
 
-<main class="mx-auto flex w-full max-w-xl flex-col gap-8 px-6 py-16">
+<main class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-16">
 	<!-- Back -->
 	<a
 		href={resolve(rootPath)}
-		class="text-xs font-medium tracking-wide text-muted uppercase transition-colors hover:text-secondary"
+		class="w-fit font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:text-accent"
 	>
 		← Neue Nachricht
 	</a>
 
 	<!-- Header -->
 	<header class="flex flex-col gap-3">
-		<h1 class="text-2xl">{displayTitle}</h1>
+		<h1 class="text-3xl sm:text-4xl">{displayTitle}</h1>
 		<div class="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted">
 			<span>{data.paste.id.slice(0, 8)}</span>
 			<span>{data.paste.language}</span>
@@ -190,10 +190,7 @@
 	</header>
 
 	<noscript>
-		<div
-			class="rounded-sm border border-line bg-canvas px-4 py-3 text-sm text-secondary"
-			role="alert"
-		>
+		<div class="border border-line bg-canvas px-4 py-3 text-sm text-secondary" role="alert">
 			JavaScript wird benötigt, um verschlüsselte Nachrichten zu entschlüsseln.
 		</div>
 	</noscript>
@@ -201,8 +198,9 @@
 	<!-- Password locked -->
 	{#if isLocked}
 		<div class="flex gap-0">
-			<div class="hidden w-1 shrink-0 bg-accent sm:block"></div>
-			<section class="flex grow flex-col gap-5 border border-line bg-surface p-6 sm:px-8 sm:py-8">
+			<section
+				class="frame flex grow flex-col gap-5 border border-line bg-surface p-6 sm:px-8 sm:py-8"
+			>
 				<div>
 					<h2 class="text-lg">Passwort erforderlich</h2>
 					<p class="mt-1 text-sm text-secondary">
@@ -212,7 +210,7 @@
 
 				{#if form?.error}
 					<div
-						class="rounded-sm border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
+						class="border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
 						role="alert"
 					>
 						{form.error}
@@ -225,11 +223,11 @@
 						type="password"
 						autocomplete="current-password"
 						placeholder="Passwort eingeben"
-						class="rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
+						class="border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 					/>
 					<button
 						type="submit"
-						class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-canvas transition-colors hover:bg-accent-hover"
+						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-2.5 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary hover:text-ink"
 					>
 						Nachricht entsperren
 					</button>
@@ -240,8 +238,9 @@
 		<!-- One-time confirmation -->
 	{:else if isOnetime && !shouldReveal}
 		<div class="flex gap-0">
-			<div class="hidden w-1 shrink-0 bg-danger sm:block"></div>
-			<section class="flex grow flex-col gap-5 border border-line bg-surface p-6 sm:px-8 sm:py-8">
+			<section
+				class="frame flex grow flex-col gap-5 border border-line bg-surface p-6 sm:px-8 sm:py-8"
+			>
 				<div>
 					<h2 class="text-lg">Einmalige Nachricht</h2>
 					<p class="mt-1 text-sm text-secondary">
@@ -251,7 +250,7 @@
 
 				{#if form?.error}
 					<div
-						class="rounded-sm border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
+						class="border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
 						role="alert"
 					>
 						{form.error}
@@ -266,12 +265,12 @@
 							autocomplete="current-password"
 							placeholder="Passwort eingeben"
 							bind:value={passwordValue}
-							class="rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-danger focus:outline-none"
+							class="border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-danger focus:outline-none"
 						/>
 					{/if}
 					<button
 						type="submit"
-						class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-sm bg-danger px-5 py-2.5 text-sm font-semibold text-canvas transition-colors hover:opacity-90"
+						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-danger px-5 py-2.5 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary"
 					>
 						Anzeigen und löschen
 					</button>
@@ -282,8 +281,7 @@
 		<!-- Content display -->
 	{:else}
 		<section class="flex gap-0">
-			<div class="hidden w-1 shrink-0 bg-accent sm:block"></div>
-			<div class="flex grow flex-col overflow-hidden border border-line bg-surface">
+			<div class="frame flex grow flex-col overflow-hidden border border-line bg-surface">
 				<div
 					class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3"
 				>
@@ -291,7 +289,7 @@
 					<button
 						type="button"
 						onclick={copyPasteContent}
-						class="inline-flex cursor-pointer items-center rounded-sm border border-line bg-canvas px-3 py-1.5 font-mono text-xs tracking-wide text-secondary uppercase transition-colors hover:border-accent hover:text-accent"
+						class="inline-flex cursor-pointer items-center border border-line bg-canvas px-3 py-1.5 font-display text-xs tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 					>
 						{#if copied}
 							Kopiert
@@ -305,9 +303,9 @@
 						{decryptError}
 					</div>
 				{:else}
-					<pre class="overflow-x-auto px-5 py-5 text-sm leading-relaxed">
-						<code class={`language-${data.paste.language}`}>{pasteContent}</code>
-					</pre>
+					<pre class="overflow-x-auto px-5 py-5 text-sm leading-relaxed"><code
+							class={`language-${data.paste.language}`}>{pasteContent}</code
+						></pre>
 				{/if}
 			</div>
 		</section>
@@ -315,7 +313,7 @@
 		<div class="flex justify-end">
 			<a
 				href={resolve(rootPath)}
-				class="inline-flex items-center rounded-sm border border-line bg-canvas px-4 py-2 text-xs font-semibold tracking-wide text-secondary uppercase transition-colors hover:border-accent hover:text-accent"
+				class="inline-flex items-center border border-line bg-canvas px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 			>
 				Eigene Nachricht erstellen
 			</a>

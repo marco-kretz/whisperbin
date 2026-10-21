@@ -6,16 +6,16 @@
 	<title>Datenschutz - whisperbin</title>
 </svelte:head>
 
-<main class="mx-auto flex w-full max-w-xl flex-col gap-8 px-6 py-20">
+<main class="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-20">
 	<a
 		href={resolve('/')}
-		class="text-xs font-medium tracking-wide text-muted uppercase transition-colors hover:text-secondary"
+		class="w-fit font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:text-accent"
 	>
 		← Zurück
 	</a>
 
 	<header class="flex flex-col gap-2">
-		<h1 class="text-2xl">Datenschutzerklärung</h1>
+		<h1 class="text-3xl">Datenschutzerklärung</h1>
 		<p class="text-sm text-secondary">Gemäß DSGVO</p>
 	</header>
 

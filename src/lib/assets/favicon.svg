@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
   <title>whisperbin</title>
-  <rect width="128" height="128" fill="#070504"/>
-  <rect x="16" y="16" width="96" height="96" fill="none" stroke="#c9a84c" stroke-width="3" opacity="0.4"/>
-  <rect x="24" y="40" width="80" height="56" fill="none" stroke="#c9a84c" stroke-width="2"/>
-  <path d="M24 40 L64 20 L104 40" fill="none" stroke="#c9a84c" stroke-width="2"/>
-  <circle cx="64" cy="76" r="5" fill="#c9a84c" opacity="0.6"/>
-  <rect x="61" y="76" width="6" height="10" fill="#c9a84c" opacity="0.6"/>
+  <rect width="128" height="128" fill="#f3ead8"/>
+  <path d="M10 34 V10 H34 M118 94 V118 H94" fill="none" stroke="#f2541b" stroke-width="8"/>
+  <path d="M46 58 V44 A18 18 0 0 1 82 44 V58" fill="none" stroke="#1f1611" stroke-width="9"/>
+  <path d="M34 58 H94 V96 L86 104 H34 Z" fill="#1f1611"/>
+  <circle cx="64" cy="76" r="7" fill="#f2541b"/>
+  <rect x="60" y="76" width="8" height="14" fill="#f2541b"/>
 </svg>
