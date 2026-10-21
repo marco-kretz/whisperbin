@@ -137,11 +137,13 @@
 	<title>whisperbin — vertrauliche Nachrichten teilen</title>
 </svelte:head>
 
-<main class="mx-auto flex w-full max-w-xl flex-col gap-12 px-6 py-20">
+<main class="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-16">
 	<!-- Header -->
 	<header class="flex flex-col gap-3">
-		<p class="text-xs font-medium tracking-wide text-muted uppercase">whisperbin</p>
-		<h1 class="text-3xl">Vertrauliche Nachrichten teilen</h1>
+		<p class="font-display text-xs font-semibold tracking-wider text-accent uppercase">
+			// whisperbin · e2e
+		</p>
+		<h1 class="text-4xl sm:text-5xl">Vertrauliche Nachrichten teilen</h1>
 		<p class="max-w-md text-sm leading-relaxed text-secondary">
 			Ende-zu-Ende verschlüsselt in deinem Browser. Der Schlüssel verlässt dein Gerät nie. Die
 			Nachricht löscht sich automatisch nach Ablauf.
@@ -150,17 +152,14 @@
 
 	<!-- Errors -->
 	<noscript>
-		<div
-			class="rounded-sm border border-line bg-canvas px-4 py-3 text-sm text-secondary"
-			role="alert"
-		>
+		<div class="border border-line bg-canvas px-4 py-3 text-sm text-secondary" role="alert">
 			JavaScript wird benötigt, um Nachrichten zu verschlüsseln und zu erstellen.
 		</div>
 	</noscript>
 
 	{#if clientError}
 		<div
-			class="rounded-sm border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
+			class="border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
 			role="alert"
 		>
 			{clientError}
@@ -169,7 +168,7 @@
 
 	{#if form?.error}
 		<div
-			class="rounded-sm border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
+			class="border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
 			role="alert"
 		>
 			{form.error}
@@ -178,52 +177,54 @@
 
 	<!-- Form -->
 	<div class="flex gap-0">
-		<div class="hidden w-1 shrink-0 bg-accent sm:block"></div>
 		<form
 			method="POST"
 			use:encryptEnhance
-			class="flex grow flex-col gap-6 border border-line bg-surface p-6 sm:px-8 sm:py-8"
+			class="frame flex grow flex-col gap-6 border border-line bg-surface p-6 sm:px-8 sm:py-8"
 		>
 			<div class="flex flex-col gap-2">
-				<label class="text-xs font-semibold tracking-wide text-muted uppercase" for="title"
-					>Titel <span class="font-normal lowercase">(optional)</span></label
+				<label
+					class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
+					for="title">Titel <span class="font-normal lowercase">(optional)</span></label
 				>
 				<input
 					id="title"
 					name="title"
 					placeholder="Z. B. Zugangsdaten für Projekt Alpha"
 					maxlength={MAX_TITLE_LENGTH}
-					class="rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
+					class="border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 					bind:value={titleValue}
 				/>
 			</div>
 
 			<div class="flex flex-col gap-2">
-				<label class="text-xs font-semibold tracking-wide text-muted uppercase" for="content"
-					>Inhalt</label
+				<label
+					class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
+					for="content">Inhalt</label
 				>
 				<textarea
 					id="content"
 					name="content"
-					rows="10"
+					rows="16"
 					required
 					maxlength={MAX_CONTENT_LENGTH}
 					placeholder="Füge deine Nachricht hier ein …"
-					class="resize-y rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
+					class="resize-y border border-line bg-canvas px-3 py-2 font-mono text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 					bind:value={contentValue}></textarea>
 			</div>
 
 			<div class="grid gap-4 sm:grid-cols-2">
 				<div class="flex flex-col gap-2">
-					<label class="text-xs font-semibold tracking-wide text-muted uppercase" for="expiresIn"
-						>Läuft ab in</label
+					<label
+						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
+						for="expiresIn">Läuft ab in</label
 					>
 					<select
 						id="expiresIn"
 						name="expiresIn"
 						required
 						bind:value={selectedExpiry}
-						class="cursor-pointer rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
+						class="cursor-pointer border border-line bg-canvas px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
 					>
 						{#each EXPIRATION_OPTIONS as option (option.value)}
 							<option value={option.value}>{option.label}</option>
@@ -231,15 +232,16 @@
 					</select>
 				</div>
 				<div class="flex flex-col gap-2">
-					<label class="text-xs font-semibold tracking-wide text-muted uppercase" for="language"
-						>Format</label
+					<label
+						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
+						for="language">Format</label
 					>
 					<select
 						id="language"
 						name="language"
 						required
 						bind:value={selectedLanguage}
-						class="cursor-pointer rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
+						class="cursor-pointer border border-line bg-canvas px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
 					>
 						{#each LANGUAGE_OPTIONS as option (option.value)}
 							<option value={option.value}>{option.label}</option>
@@ -249,8 +251,9 @@
 			</div>
 
 			<div class="flex flex-col gap-2">
-				<label class="text-xs font-semibold tracking-wide text-muted uppercase" for="password"
-					>Passwort <span class="font-normal lowercase">(optional)</span></label
+				<label
+					class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
+					for="password">Passwort <span class="font-normal lowercase">(optional)</span></label
 				>
 				<input
 					id="password"
@@ -259,7 +262,7 @@
 					autocomplete="new-password"
 					maxlength={MAX_PASSWORD_LENGTH}
 					placeholder="Zusätzlicher Passwortschutz"
-					class="rounded-sm border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
+					class="border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 				/>
 				<p class="text-xs text-muted">
 					Leer lassen, damit jeder mit dem Link die Nachricht öffnen kann.
@@ -268,7 +271,7 @@
 
 			<label class="flex cursor-pointer items-start gap-3 border border-line bg-canvas px-4 py-3">
 				<input
-					class="mt-1 h-4 w-4 cursor-pointer rounded-sm border-line bg-canvas text-accent focus:ring-0 focus:ring-offset-0"
+					class="mt-1 h-4 w-4 cursor-pointer border-line bg-canvas accent-accent focus:ring-0 focus:ring-offset-0"
 					type="checkbox"
 					name="onetime"
 					bind:checked={onetimeEnabled}
@@ -284,7 +287,7 @@
 			<button
 				type="submit"
 				disabled={encrypting}
-				class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-sm bg-accent px-5 py-3 text-sm font-semibold text-canvas transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+				class="inline-flex cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-3 font-display text-sm font-bold tracking-wider text-primary uppercase transition-colors cut hover:bg-primary hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				{#if encrypting}
 					<svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -313,26 +316,26 @@
 	<!-- Share URL -->
 	{#if shareUrl}
 		<section class="flex gap-0">
-			<div class="hidden w-1 shrink-0 bg-success sm:block"></div>
 			<div
-				class="flex grow flex-col gap-3 border border-line-strong bg-surface p-6 sm:px-8 sm:py-8"
+				class="frame flex grow flex-col gap-3 border border-line bg-surface p-6 [--frame-color:var(--color-amber)] sm:px-8 sm:py-8"
 			>
 				<div class="flex items-center justify-between gap-2">
-					<span class="text-sm font-semibold text-primary">Link bereit</span>
-					<span
-						class="rounded-sm border border-line bg-canvas px-2 py-0.5 font-mono text-xs text-secondary"
+					<span class="glitch font-display text-sm font-bold tracking-wider text-primary uppercase"
+						>Link bereit</span
+					>
+					<span class="border border-line bg-canvas px-2 py-0.5 font-mono text-xs text-secondary"
 						>{selectedExpiryLabel}</span
 					>
 				</div>
 				<code
-					class="block rounded-sm border border-line bg-canvas px-3 py-2.5 font-mono text-sm break-all text-primary"
+					class="block border border-line bg-canvas px-3 py-2.5 font-mono text-sm break-all text-primary"
 					>{shareUrl}</code
 				>
 				<div class="flex items-center gap-3">
 					<button
 						type="button"
 						onclick={copyShareUrl}
-						class="inline-flex cursor-pointer items-center rounded-sm border border-line bg-canvas px-4 py-2 text-xs font-semibold tracking-wide text-secondary uppercase transition-colors hover:border-accent hover:text-accent"
+						class="inline-flex cursor-pointer items-center border border-line bg-canvas px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-amber"
 					>
 						{#if copied}
 							Kopiert

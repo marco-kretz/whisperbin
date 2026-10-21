@@ -1,22 +1,101 @@
 @import 'tailwindcss';
-@import 'highlight.js/styles/monokai.css';
+@import 'highlight.js/styles/base16/gruvbox-light-hard.css';
 
 @theme {
-	--color-canvas: #070504;
-	--color-surface: #0d0a07;
-	--color-surface-hover: #16120e;
-	--color-line: #1e1a15;
-	--color-line-strong: #2a2520;
-	--color-accent: #c9a84c;
-	--color-accent-hover: #ddbe68;
-	--color-accent-dim: rgba(201, 168, 76, 0.08);
-	--color-success: #6b9e7a;
-	--color-success-dim: rgba(107, 158, 122, 0.08);
-	--color-danger: #b87070;
-	--color-danger-dim: rgba(184, 112, 112, 0.08);
-	--color-primary: #e8e2d9;
-	--color-secondary: #7a7265;
-	--color-muted: #4a433a;
+	--font-display: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+	--color-canvas: #f3ead8;
+	--color-surface: #fffaf1;
+	--color-surface-hover: #fbf1df;
+	--color-line: #dccdb4;
+	--color-line-strong: #1f1611;
+	--color-accent: #f2541b;
+	--color-accent-hover: #d9440f;
+	--color-accent-dim: rgba(242, 84, 27, 0.1);
+	--color-hot: #e8285a;
+	--color-amber: #ffbe0b;
+	--color-success: #3f8a3a;
+	--color-success-dim: rgba(63, 138, 58, 0.1);
+	--color-danger: #d62839;
+	--color-danger-dim: rgba(214, 40, 57, 0.08);
+	--color-primary: #1f1611;
+	--color-secondary: #5e4e40;
+	--color-muted: #8c7a68;
+}
+
+/* Chamfered corners for buttons and badges */
+@utility cut {
+	clip-path: polygon(
+		10px 0,
+		100% 0,
+		100% calc(100% - 10px),
+		calc(100% - 10px) 100%,
+		0 100%,
+		0 10px
+	);
+}
+
+/* Corner brackets for panels; override color via --frame-color */
+@utility frame {
+	position: relative;
+
+	&::before,
+	&::after {
+		content: '';
+		position: absolute;
+		width: 16px;
+		height: 16px;
+		pointer-events: none;
+		color: var(--frame-color, var(--color-accent));
+	}
+
+	&::before {
+		top: -1px;
+		left: -1px;
+		border-top: 3px solid;
+		border-left: 3px solid;
+	}
+
+	&::after {
+		right: -1px;
+		bottom: -1px;
+		border-right: 3px solid;
+		border-bottom: 3px solid;
+	}
+}
+
+@utility glitch {
+	animation: glitch 0.45s steps(2, end) 2;
+}
+
+@keyframes glitch {
+	0% {
+		text-shadow:
+			2px 0 var(--color-hot),
+			-2px 0 var(--color-amber);
+		transform: translate(0);
+	}
+	33% {
+		text-shadow:
+			-2px 0 var(--color-hot),
+			2px 0 var(--color-amber);
+		transform: translate(-1px, 1px);
+	}
+	66% {
+		text-shadow:
+			1px 0 var(--color-hot),
+			-1px 0 var(--color-amber);
+		transform: translate(1px, -1px);
+	}
+	100% {
+		text-shadow: none;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.glitch {
+		animation: none;
+	}
 }
 
 html,
@@ -34,6 +113,10 @@ body {
 		Roboto,
 		sans-serif;
 	background-color: var(--color-canvas);
+	background-image:
+		linear-gradient(rgba(31, 22, 17, 0.045) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(31, 22, 17, 0.045) 1px, transparent 1px);
+	background-size: 32px 32px;
 	color: var(--color-primary);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -43,10 +126,10 @@ body {
 h1,
 h2,
 h3 {
-	font-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-	font-weight: 600;
-	letter-spacing: -0.02em;
-	line-height: 1.2;
+	font-family: var(--font-display);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	line-height: 1.1;
 	color: var(--color-primary);
 }
 
@@ -61,10 +144,11 @@ a:hover {
 }
 
 ::selection {
-	background: rgba(201, 168, 76, 0.25);
-	color: #fff;
+	background: var(--color-amber);
+	color: var(--color-primary);
 }
 
-pre code {
-	background: transparent !important;
+pre code.hljs {
+	background: transparent;
+	padding: 0;
 }
