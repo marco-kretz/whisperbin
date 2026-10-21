@@ -66,3 +66,25 @@ export const decryptPayload = async (payload: EncryptedPayload) => {
 
 	return JSON.parse(decoded) as { title: string | null; content: string };
 };
+
+const PASSWORD_CLASSES = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz', '0123456789'];
+const PASSWORD_SYMBOLS = '!@#$%^&*()-_=+[]{};:,.<>?/~';
+
+const randomIndex = (max: number) => {
+	// Rejection sampling avoids modulo bias.
+	const limit = Math.floor(0x100000000 / max) * max;
+	const buffer = new Uint32Array(1);
+	do crypto.getRandomValues(buffer);
+	while (buffer[0] >= limit);
+	return buffer[0] % max;
+};
+
+export const generatePassword = (length: number, withSymbols: boolean) => {
+	const classes = withSymbols ? [...PASSWORD_CLASSES, PASSWORD_SYMBOLS] : PASSWORD_CLASSES;
+	const charset = classes.join('');
+	let password: string;
+	// Retry until every class is present, so the result passes typical password policies.
+	do password = Array.from({ length }, () => charset[randomIndex(charset.length)]).join('');
+	while (!classes.every((set) => [...password].some((char) => set.includes(char))));
+	return password;
+};

@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import { resolve } from '$app/paths';
 
-	import { encryptPayload } from '#lib/crypto.js';
+	import { encryptPayload, generatePassword } from '#lib/crypto.js';
 	import { EXPIRATION_OPTIONS, LANGUAGE_OPTIONS } from '#lib/paste-options.js';
 
 	type FormValues = {
@@ -28,6 +29,9 @@
 	const MAX_TITLE_LENGTH = 120;
 	const MAX_CONTENT_LENGTH = 20000;
 	const MAX_PASSWORD_LENGTH = 200;
+	const MIN_GENERATED_LENGTH = 8;
+	const MAX_GENERATED_LENGTH = 128;
+	const GENERATOR_SETTINGS_KEY = 'whisperbin:password-generator';
 
 	let { data, form }: PageProps = $props();
 
@@ -60,6 +64,57 @@
 			: null
 	);
 	let copied = $state(false);
+
+	let generatedLength = $state(24);
+	let generatedWithSymbols = $state(true);
+	let generatedPassword = $state('');
+	let generatedCopied = $state(false);
+	let contentElement = $state<HTMLTextAreaElement>();
+
+	const clampGeneratedLength = (value: number) =>
+		Math.min(MAX_GENERATED_LENGTH, Math.max(MIN_GENERATED_LENGTH, Math.round(value) || 0));
+
+	onMount(() => {
+		try {
+			const stored = JSON.parse(localStorage.getItem(GENERATOR_SETTINGS_KEY) ?? 'null');
+			if (typeof stored?.length === 'number') generatedLength = clampGeneratedLength(stored.length);
+			if (typeof stored?.withSymbols === 'boolean') generatedWithSymbols = stored.withSymbols;
+		} catch {
+			// Storage unavailable or corrupt: keep defaults.
+		}
+	});
+
+	const regeneratePassword = () => {
+		generatedLength = clampGeneratedLength(generatedLength);
+		generatedPassword = generatePassword(generatedLength, generatedWithSymbols);
+		try {
+			localStorage.setItem(
+				GENERATOR_SETTINGS_KEY,
+				JSON.stringify({ length: generatedLength, withSymbols: generatedWithSymbols })
+			);
+		} catch {
+			// Storage unavailable (e.g. private mode): settings just won't persist.
+		}
+	};
+
+	const insertGeneratedPassword = () => {
+		if (!generatedPassword || !contentElement) return;
+		const { selectionStart, selectionEnd } = contentElement;
+		contentValue =
+			contentValue.slice(0, selectionStart) + generatedPassword + contentValue.slice(selectionEnd);
+		const cursor = selectionStart + generatedPassword.length;
+		requestAnimationFrame(() => {
+			contentElement?.focus();
+			contentElement?.setSelectionRange(cursor, cursor);
+		});
+	};
+
+	const copyGeneratedPassword = async () => {
+		if (!generatedPassword) return;
+		await navigator.clipboard.writeText(generatedPassword);
+		generatedCopied = true;
+		setTimeout(() => (generatedCopied = false), 1500);
+	};
 
 	const encryptSubmit: SubmitFunction = async ({ formData, cancel }) => {
 		clientError = null;
@@ -210,8 +265,86 @@
 					maxlength={MAX_CONTENT_LENGTH}
 					placeholder="Füge deine Nachricht hier ein …"
 					class="resize-y border border-line bg-canvas px-3 py-2 font-mono text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
-					bind:value={contentValue}></textarea>
+					bind:value={contentValue}
+					bind:this={contentElement}></textarea>
 			</div>
+
+			<details class="group border border-line bg-canvas">
+				<summary
+					class="cursor-pointer px-4 py-3 font-display text-xs font-semibold tracking-wider text-secondary uppercase select-none hover:text-primary"
+				>
+					Passwort generieren
+				</summary>
+				<div class="flex flex-col gap-4 border-t border-line px-4 py-4">
+					<div class="flex flex-wrap items-end gap-4">
+						<div class="flex grow flex-col gap-2">
+							<label class="text-xs text-secondary" for="generatedLength">Länge</label>
+							<div class="flex items-center gap-3">
+								<input
+									type="range"
+									min={MIN_GENERATED_LENGTH}
+									max={MAX_GENERATED_LENGTH}
+									bind:value={generatedLength}
+									oninput={regeneratePassword}
+									aria-label="Passwortlänge"
+									class="grow cursor-pointer accent-accent"
+								/>
+								<input
+									id="generatedLength"
+									type="number"
+									min={MIN_GENERATED_LENGTH}
+									max={MAX_GENERATED_LENGTH}
+									bind:value={generatedLength}
+									onchange={regeneratePassword}
+									class="w-20 border border-line bg-surface px-2 py-1 text-sm text-primary focus:border-accent focus:outline-none"
+								/>
+							</div>
+						</div>
+						<label class="flex cursor-pointer items-center gap-2 pb-1 text-sm text-primary">
+							<input
+								type="checkbox"
+								bind:checked={generatedWithSymbols}
+								onchange={regeneratePassword}
+								class="h-4 w-4 cursor-pointer accent-accent"
+							/>
+							Sonderzeichen
+						</label>
+					</div>
+
+					{#if generatedPassword}
+						<code
+							class="block border border-line bg-surface px-3 py-2 font-mono text-sm break-all text-primary"
+							>{generatedPassword}</code
+						>
+					{/if}
+
+					<div class="flex flex-wrap gap-3">
+						<button
+							type="button"
+							onclick={regeneratePassword}
+							class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-accent"
+						>
+							{generatedPassword ? 'Neu generieren' : 'Generieren'}
+						</button>
+						{#if generatedPassword}
+							<button
+								type="button"
+								onclick={insertGeneratedPassword}
+								class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-accent"
+							>
+								In Inhalt einfügen
+							</button>
+							<button
+								type="button"
+								onclick={copyGeneratedPassword}
+								class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-accent"
+							>
+								{generatedCopied ? 'Kopiert' : 'Kopieren'}
+							</button>
+						{/if}
+					</div>
+				</div>
+			</details>
 
 			<div class="grid gap-4 sm:grid-cols-2">
 				<div class="flex flex-col gap-2">
