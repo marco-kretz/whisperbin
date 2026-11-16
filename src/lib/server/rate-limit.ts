@@ -1,4 +1,5 @@
 import type { RequestEvent } from '@sveltejs/kit';
+import { dev } from '$app/env';
 
 import { getRedisClient } from './redis';
 
@@ -110,6 +111,8 @@ export const checkRateLimit = async (
 	maxRequests: number,
 	windowMs: number
 ): Promise<boolean> => {
+	// No rate limiting under `vite dev`; production builds are unaffected
+	if (dev) return true;
 	const safeIdentifier = sanitizeIdentifier(identifier);
 	const key = `rate:${safeIdentifier}`;
 	const redisResult = await checkRedisRateLimit(key, maxRequests, windowMs);
@@ -120,6 +123,7 @@ export const checkRateLimit = async (
 };
 
 export const checkPasswordRateLimit = async (identifier: string): Promise<boolean> => {
+	if (dev) return true;
 	const safeIdentifier = sanitizeIdentifier(identifier);
 	const key = `password:${safeIdentifier}`;
 	const redisResult = await checkRedisRateLimit(key, 10, 300000);
