@@ -219,20 +219,25 @@
 		copied = true;
 		setTimeout(() => (copied = false), 1500);
 	};
+
+	const revealShareUrl = (node: HTMLElement) => {
+		const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		node.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+	};
 </script>
 
 <svelte:head>
 	<title>whisperbin — vertrauliche Nachrichten teilen</title>
 </svelte:head>
 
-<main class="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-16">
+<main class="mx-auto flex w-full max-w-5xl grow flex-col gap-6 px-6 py-6">
 	<!-- Header -->
 	<header class="flex flex-col gap-3">
 		<p class="font-display text-xs font-semibold tracking-wider text-accent uppercase">
 			// whisperbin · e2e
 		</p>
 		<h1 class="text-4xl sm:text-5xl">Vertrauliche Nachrichten teilen</h1>
-		<ul class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+		<ul class="mt-3 hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
 			{#each FEATURES as feature (feature.title)}
 				<li class="flex items-start gap-3">
 					<span
@@ -288,11 +293,11 @@
 	{/if}
 
 	<!-- Form -->
-	<div class="flex gap-0">
+	<div class="flex grow gap-0">
 		<form
 			method="POST"
 			use:encryptEnhance
-			class="frame flex grow flex-col gap-6 border border-line bg-surface p-6 sm:px-8 sm:py-8"
+			class="frame flex grow flex-col gap-4 border border-line bg-surface p-6 sm:px-8"
 		>
 			<div class="flex flex-col gap-2">
 				<label
@@ -309,7 +314,7 @@
 				/>
 			</div>
 
-			<div class="flex flex-col gap-2">
+			<div class="flex grow flex-col gap-2">
 				<label
 					class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
 					for="content">Inhalt</label
@@ -317,11 +322,11 @@
 				<textarea
 					id="content"
 					name="content"
-					rows="16"
+					rows="6"
 					required
 					maxlength={MAX_CONTENT_LENGTH}
 					placeholder="Füge deine Nachricht hier ein …"
-					class="resize-y border border-line bg-canvas px-3 py-2 font-mono text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
+					class="grow resize-y border border-line bg-canvas px-3 py-2 font-mono text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 					bind:value={contentValue}
 					bind:this={contentElement}></textarea>
 			</div>
@@ -403,7 +408,7 @@
 				</div>
 			</details>
 
-			<div class="grid gap-4 sm:grid-cols-2">
+			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 				<div class="flex flex-col gap-2">
 					<label
 						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
@@ -438,25 +443,22 @@
 						{/each}
 					</select>
 				</div>
-			</div>
 
-			<div class="flex flex-col gap-2">
-				<label
-					class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
-					for="password">Passwort <span class="font-normal lowercase">(optional)</span></label
-				>
-				<input
-					id="password"
-					name="password"
-					type="password"
-					autocomplete="new-password"
-					maxlength={MAX_PASSWORD_LENGTH}
-					placeholder="Zusätzlicher Passwortschutz"
-					class="border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
-				/>
-				<p class="text-xs text-muted">
-					Leer lassen, damit jeder mit dem Link die Nachricht öffnen kann.
-				</p>
+				<div class="flex flex-col gap-2 sm:col-span-2 lg:col-span-1">
+					<label
+						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
+						for="password">Passwort <span class="font-normal lowercase">(optional)</span></label
+					>
+					<input
+						id="password"
+						name="password"
+						type="password"
+						autocomplete="new-password"
+						maxlength={MAX_PASSWORD_LENGTH}
+						placeholder="Zusätzlicher Passwortschutz"
+						class="border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
+					/>
+				</div>
 			</div>
 
 			<label class="flex cursor-pointer items-start gap-3 border border-line bg-canvas px-4 py-3">
@@ -505,40 +507,44 @@
 
 	<!-- Share URL -->
 	{#if shareUrl}
-		<section class="flex gap-0">
-			<div
-				class="frame flex grow flex-col gap-3 border border-line bg-surface p-6 [--frame-color:var(--color-amber)] sm:px-8 sm:py-8"
-			>
-				<div class="flex items-center justify-between gap-2">
-					<span class="glitch font-display text-sm font-bold tracking-wider text-primary uppercase"
-						>Link bereit</span
-					>
-					<span class="border border-line bg-canvas px-2 py-0.5 font-mono text-xs text-secondary"
-						>{selectedExpiryLabel}</span
-					>
-				</div>
-				<code
-					class="block border border-line bg-canvas px-3 py-2.5 font-mono text-sm break-all text-primary"
-					>{shareUrl}</code
+		<!-- Keyed so a second paste replays the reveal -->
+		{#key shareUrl}
+			<section class="flex scroll-mb-6 gap-0" {@attach revealShareUrl}>
+				<div
+					class="frame flex grow reveal flex-col gap-3 border border-amber/40 bg-surface p-6 [--frame-color:var(--color-amber)] sm:px-8 sm:py-8"
 				>
-				<div class="flex items-center gap-3">
-					<button
-						type="button"
-						onclick={copyShareUrl}
-						class="inline-flex cursor-pointer items-center border border-line bg-canvas px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
+					<div class="flex items-center justify-between gap-2">
+						<span
+							class="glitch font-display text-sm font-bold tracking-wider text-primary uppercase"
+							>Link bereit</span
+						>
+						<span class="border border-line bg-canvas px-2 py-0.5 font-mono text-xs text-secondary"
+							>{selectedExpiryLabel}</span
+						>
+					</div>
+					<code
+						class="block border border-line bg-canvas px-3 py-2.5 font-mono text-sm break-all text-primary"
+						>{shareUrl}</code
 					>
-						{#if copied}
-							Kopiert
-						{:else}
-							Kopieren
-						{/if}
-					</button>
+					<div class="flex items-center gap-3">
+						<button
+							type="button"
+							onclick={copyShareUrl}
+							class="inline-flex cursor-pointer items-center border border-line bg-canvas px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
+						>
+							{#if copied}
+								Kopiert
+							{:else}
+								Kopieren
+							{/if}
+						</button>
+					</div>
+					<p class="text-xs leading-relaxed text-muted">
+						Dieser Link enthält den Schlüssel zum Entschlüsseln. Teile ihn nur mit der Person, die
+						die Nachricht lesen soll.
+					</p>
 				</div>
-				<p class="text-xs leading-relaxed text-muted">
-					Dieser Link enthält den Schlüssel zum Entschlüsseln. Teile ihn nur mit der Person, die die
-					Nachricht lesen soll.
-				</p>
-			</div>
-		</section>
+			</section>
+		{/key}
 	{/if}
 </main>
