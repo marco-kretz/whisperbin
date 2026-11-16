@@ -13,7 +13,7 @@
 <div class="flex min-h-svh flex-col">
 	{@render children()}
 
-	<footer class="mt-auto border-t border-line py-8">
+	<footer class="mt-auto border-t border-line py-5">
 		<div
 			class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 font-mono text-xs text-muted"
 		>
