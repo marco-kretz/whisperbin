@@ -5,12 +5,33 @@
 	import './layout.css';
 	import { resolve } from '$app/paths';
 	import favicon from '#lib/assets/favicon.svg';
+	import { LOCALES } from '#lib/i18n.js';
+	import { i18n, setLocale } from '#lib/i18n.svelte.js';
 
 	let { children } = $props();
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 <div class="flex min-h-svh flex-col">
+	<header class="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 pt-6">
+		<span class="font-display text-xs font-semibold tracking-wider text-accent uppercase">
+			// whisperbin · e2e
+		</span>
+		<div class="flex border border-line" role="group" aria-label={i18n.m.languageSwitch}>
+			{#each LOCALES as locale (locale)}
+				<button
+					type="button"
+					lang={locale}
+					aria-pressed={i18n.locale === locale}
+					onclick={() => setLocale(locale)}
+					class="cursor-pointer px-2 py-0.5 font-display text-xs font-semibold tracking-wider uppercase transition-colors not-aria-pressed:text-secondary not-aria-pressed:hover:text-primary aria-pressed:bg-primary aria-pressed:text-ink"
+				>
+					{locale}
+				</button>
+			{/each}
+		</div>
+	</header>
+
 	{@render children()}
 
 	<footer class="mt-auto border-t border-line py-5">
@@ -32,8 +53,8 @@
 					</svg>
 					GitHub
 				</a>
-				<a href={resolve('impressum')} class="hover:text-secondary">Impressum</a>
-				<a href={resolve('privacy')} class="hover:text-secondary">Datenschutz</a>
+				<a href={resolve('impressum')} class="hover:text-secondary">{i18n.m.footer.imprint}</a>
+				<a href={resolve('privacy')} class="hover:text-secondary">{i18n.m.footer.privacy}</a>
 			</div>
 		</div>
 	</footer>

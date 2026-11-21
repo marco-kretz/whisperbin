@@ -10,7 +10,7 @@ Encrypted, disposable paste sharing built with SvelteKit, Tailwind CSS v4, Drizz
 - Syntax highlighting via highlight.js (Plaintext, Markdown, JavaScript, TypeScript, PHP, JSON,
   HTML, CSS, Bash)
 - Built-in password generator (length and symbols are remembered in `localStorage`)
-- German UI
+- English and German UI, picked from the browser language and switchable in the header
 - JavaScript required for create/decrypt flows
 
 ## How It Works
