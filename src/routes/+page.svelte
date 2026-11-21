@@ -302,8 +302,10 @@
 			<div class="flex flex-col gap-2">
 				<label
 					class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
-					for="title">Titel <span class="font-normal lowercase">(optional)</span></label
+					for="title"
 				>
+					Titel <span class="font-normal lowercase">(optional)</span>
+				</label>
 				<input
 					id="title"
 					name="title"
@@ -317,8 +319,10 @@
 			<div class="flex grow flex-col gap-2">
 				<label
 					class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
-					for="content">Inhalt</label
+					for="content"
 				>
+					Inhalt
+				</label>
 				<textarea
 					id="content"
 					name="content"
@@ -376,8 +380,9 @@
 					{#if generatedPassword}
 						<code
 							class="block border border-line bg-surface px-3 py-2 font-mono text-sm break-all text-primary"
-							>{generatedPassword}</code
 						>
+							{generatedPassword}
+						</code>
 					{/if}
 
 					<div class="flex flex-wrap gap-3">
@@ -412,8 +417,10 @@
 				<div class="flex flex-col gap-2">
 					<label
 						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
-						for="expiresIn">Läuft ab in</label
+						for="expiresIn"
 					>
+						Läuft ab in
+					</label>
 					<select
 						id="expiresIn"
 						name="expiresIn"
@@ -429,8 +436,10 @@
 				<div class="flex flex-col gap-2">
 					<label
 						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
-						for="language">Format</label
+						for="language"
 					>
+						Format
+					</label>
 					<select
 						id="language"
 						name="language"
@@ -447,8 +456,10 @@
 				<div class="flex flex-col gap-2 sm:col-span-2 lg:col-span-1">
 					<label
 						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
-						for="password">Passwort <span class="font-normal lowercase">(optional)</span></label
+						for="password"
 					>
+						Passwort <span class="font-normal lowercase">(optional)</span>
+					</label>
 					<input
 						id="password"
 						name="password"
@@ -516,16 +527,18 @@
 					<div class="flex items-center justify-between gap-2">
 						<span
 							class="glitch font-display text-sm font-bold tracking-wider text-primary uppercase"
-							>Link bereit</span
 						>
-						<span class="border border-line bg-canvas px-2 py-0.5 font-mono text-xs text-secondary"
-							>{selectedExpiryLabel}</span
-						>
+							Link bereit
+						</span>
+						<span class="border border-line bg-canvas px-2 py-0.5 font-mono text-xs text-secondary">
+							{selectedExpiryLabel}
+						</span>
 					</div>
 					<code
 						class="block border border-line bg-canvas px-3 py-2.5 font-mono text-sm break-all text-primary"
-						>{shareUrl}</code
 					>
+						{shareUrl}
+					</code>
 					<div class="flex items-center gap-3">
 						<button
 							type="button"
