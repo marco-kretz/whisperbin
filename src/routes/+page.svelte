@@ -4,6 +4,8 @@
 	import { resolve } from '$app/paths';
 
 	import { encryptPayload, generatePassword } from '#lib/crypto.js';
+	import type { ErrorKey } from '#lib/i18n.js';
+	import { errorText, i18n } from '#lib/i18n.svelte.js';
 	import { EXPIRATION_OPTIONS, LANGUAGE_OPTIONS } from '#lib/paste-options.js';
 
 	type FormValues = {
@@ -17,7 +19,8 @@
 
 	type ActionForm = {
 		id?: string;
-		error?: string;
+		error?: ErrorKey;
+		max?: number;
 		values?: FormValues;
 	} | null;
 
@@ -26,37 +29,21 @@
 		form: ActionForm;
 	};
 
-	// Icon paths from Lucide (ISC license), 24x24 stroke icons
-	const FEATURES = [
-		{
-			title: 'Ende-zu-Ende verschlüsselt',
-			text: 'Verschlüsselung direkt in deinem Browser',
-			icon: [
-				'M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z',
-				'M7 11V7a5 5 0 0 1 10 0v4'
-			]
-		},
-		{
-			title: 'Schlüssel bleibt bei dir',
-			text: 'Er steckt nur im Link, nie auf dem Server',
-			icon: [
-				'm15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4',
-				'm21 2-9.6 9.6',
-				'M2 15.5a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0-11 0'
-			]
-		},
-		{
-			title: 'Automatisch gelöscht',
-			text: 'Nach Ablauf der gewählten Zeit',
-			icon: ['M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0', 'M12 6v6l4 2']
-		},
-		{
-			title: 'Einmal lesen, dann weg',
-			text: 'Optional nach dem ersten Aufruf löschen',
-			icon: [
-				'M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'
-			]
-		}
+	// Icon paths from Lucide (ISC license), 24x24 stroke icons, in the order of the feature texts
+	const FEATURE_ICONS = [
+		[
+			'M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z',
+			'M7 11V7a5 5 0 0 1 10 0v4'
+		],
+		[
+			'm15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4',
+			'm21 2-9.6 9.6',
+			'M2 15.5a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0-11 0'
+		],
+		['M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0', 'M12 6v6l4 2'],
+		[
+			'M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'
+		]
 	];
 
 	const MAX_TITLE_LENGTH = 120;
@@ -75,7 +62,7 @@
 	let titleValue = $state('');
 	let contentValue = $state('');
 	let encryptionKey = $state<string | null>(null);
-	let clientError = $state<string | null>(null);
+	let clientError = $state<{ key: ErrorKey; max?: number } | null>(null);
 	let encrypting = $state(false);
 
 	$effect(() => {
@@ -89,7 +76,7 @@
 	});
 
 	const selectedExpiryLabel = $derived(
-		EXPIRATION_OPTIONS.find((o) => o.value === selectedExpiry)?.label ?? selectedExpiry
+		i18n.m.expiry[selectedExpiry as keyof typeof i18n.m.expiry] ?? selectedExpiry
 	);
 	const shareUrl = $derived(
 		form?.id && encryptionKey
@@ -157,26 +144,26 @@
 		const trimmedContent = contentValue.trim();
 
 		if (!trimmedContent) {
-			clientError = 'Bitte gib einen Inhalt ein.';
+			clientError = { key: 'contentRequired' };
 			cancel();
 			return;
 		}
 
 		if (trimmedContent.length > MAX_CONTENT_LENGTH) {
-			clientError = `Der Inhalt darf maximal ${MAX_CONTENT_LENGTH} Zeichen lang sein.`;
+			clientError = { key: 'contentTooLong', max: MAX_CONTENT_LENGTH };
 			cancel();
 			return;
 		}
 
 		if (trimmedTitle.length > MAX_TITLE_LENGTH) {
-			clientError = `Der Titel darf maximal ${MAX_TITLE_LENGTH} Zeichen lang sein.`;
+			clientError = { key: 'titleTooLong', max: MAX_TITLE_LENGTH };
 			cancel();
 			return;
 		}
 
 		const password = formData.get('password');
 		if (typeof password === 'string' && password.length > MAX_PASSWORD_LENGTH) {
-			clientError = `Das Passwort darf maximal ${MAX_PASSWORD_LENGTH} Zeichen lang sein.`;
+			clientError = { key: 'passwordTooLong', max: MAX_PASSWORD_LENGTH };
 			cancel();
 			return;
 		}
@@ -195,7 +182,7 @@
 			formData.set('title', '');
 		} catch (error) {
 			console.error('Encryption failed:', error);
-			clientError = 'Verschlüsselung fehlgeschlagen. Bitte versuche es erneut.';
+			clientError = { key: 'encryptionFailed' };
 			cancel();
 			return;
 		} finally {
@@ -227,18 +214,15 @@
 </script>
 
 <svelte:head>
-	<title>whisperbin — vertrauliche Nachrichten teilen</title>
+	<title>{i18n.m.create.pageTitle}</title>
 </svelte:head>
 
-<main class="mx-auto flex w-full max-w-5xl grow flex-col gap-6 px-6 py-6">
+<main class="mx-auto flex w-full max-w-5xl grow flex-col gap-6 px-6 pt-3 pb-6">
 	<!-- Header -->
 	<header class="flex flex-col gap-3">
-		<p class="font-display text-xs font-semibold tracking-wider text-accent uppercase">
-			// whisperbin · e2e
-		</p>
-		<h1 class="text-4xl sm:text-5xl">Vertrauliche Nachrichten teilen</h1>
+		<h1 class="text-4xl sm:text-5xl">{i18n.m.create.heading}</h1>
 		<ul class="mt-3 hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
-			{#each FEATURES as feature (feature.title)}
+			{#each i18n.m.create.features as feature, index (index)}
 				<li class="flex items-start gap-3">
 					<span
 						class="flex h-9 w-9 shrink-0 items-center justify-center border border-line bg-surface text-accent"
@@ -253,7 +237,7 @@
 							stroke-linejoin="round"
 							aria-hidden="true"
 						>
-							{#each feature.icon as d (d)}
+							{#each FEATURE_ICONS[index] as d (d)}
 								<path {d} />
 							{/each}
 						</svg>
@@ -270,7 +254,7 @@
 	<!-- Errors -->
 	<noscript>
 		<div class="border border-line bg-canvas px-4 py-3 text-sm text-secondary" role="alert">
-			JavaScript wird benötigt, um Nachrichten zu verschlüsseln und zu erstellen.
+			{i18n.m.create.noscript}
 		</div>
 	</noscript>
 
@@ -279,7 +263,7 @@
 			class="border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
 			role="alert"
 		>
-			{clientError}
+			{errorText(clientError.key, clientError.max)}
 		</div>
 	{/if}
 
@@ -288,7 +272,7 @@
 			class="border-l-2 border-l-danger bg-danger-dim px-4 py-3 text-sm text-primary"
 			role="alert"
 		>
-			{form.error}
+			{errorText(form.error, form.max)}
 		</div>
 	{/if}
 
@@ -304,12 +288,13 @@
 					class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
 					for="title"
 				>
-					Titel <span class="font-normal lowercase">(optional)</span>
+					{i18n.m.create.title}
+					<span class="font-normal lowercase">{i18n.m.create.optional}</span>
 				</label>
 				<input
 					id="title"
 					name="title"
-					placeholder="Z. B. Zugangsdaten für Projekt Alpha"
+					placeholder={i18n.m.create.titlePlaceholder}
 					maxlength={MAX_TITLE_LENGTH}
 					class="border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 					bind:value={titleValue}
@@ -321,7 +306,7 @@
 					class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
 					for="content"
 				>
-					Inhalt
+					{i18n.m.create.content}
 				</label>
 				<textarea
 					id="content"
@@ -329,7 +314,7 @@
 					rows="6"
 					required
 					maxlength={MAX_CONTENT_LENGTH}
-					placeholder="Füge deine Nachricht hier ein …"
+					placeholder={i18n.m.create.contentPlaceholder}
 					class="grow resize-y border border-line bg-canvas px-3 py-2 font-mono text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 					bind:value={contentValue}
 					bind:this={contentElement}></textarea>
@@ -339,12 +324,14 @@
 				<summary
 					class="cursor-pointer px-4 py-3 font-display text-xs font-semibold tracking-wider text-secondary uppercase select-none hover:text-primary"
 				>
-					Passwort generieren
+					{i18n.m.create.generator}
 				</summary>
 				<div class="flex flex-col gap-4 border-t border-line px-4 py-4">
 					<div class="flex flex-wrap items-end gap-4">
 						<div class="flex grow flex-col gap-2">
-							<label class="text-xs text-secondary" for="generatedLength">Länge</label>
+							<label class="text-xs text-secondary" for="generatedLength">
+								{i18n.m.create.length}
+							</label>
 							<div class="flex items-center gap-3">
 								<input
 									type="range"
@@ -352,7 +339,7 @@
 									max={MAX_GENERATED_LENGTH}
 									bind:value={generatedLength}
 									oninput={regeneratePassword}
-									aria-label="Passwortlänge"
+									aria-label={i18n.m.create.lengthAria}
 									class="grow cursor-pointer accent-accent"
 								/>
 								<input
@@ -373,7 +360,7 @@
 								onchange={regeneratePassword}
 								class="h-4 w-4 cursor-pointer accent-accent"
 							/>
-							Sonderzeichen
+							{i18n.m.create.symbols}
 						</label>
 					</div>
 
@@ -391,7 +378,7 @@
 							onclick={regeneratePassword}
 							class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 						>
-							{generatedPassword ? 'Neu generieren' : 'Generieren'}
+							{generatedPassword ? i18n.m.create.regenerate : i18n.m.create.generate}
 						</button>
 						{#if generatedPassword}
 							<button
@@ -399,14 +386,14 @@
 								onclick={insertGeneratedPassword}
 								class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 							>
-								In Inhalt einfügen
+								{i18n.m.create.insert}
 							</button>
 							<button
 								type="button"
 								onclick={copyGeneratedPassword}
 								class="inline-flex cursor-pointer items-center border border-line bg-surface px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 							>
-								{generatedCopied ? 'Kopiert' : 'Kopieren'}
+								{generatedCopied ? i18n.m.copied : i18n.m.copy}
 							</button>
 						{/if}
 					</div>
@@ -419,7 +406,7 @@
 						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
 						for="expiresIn"
 					>
-						Läuft ab in
+						{i18n.m.create.expiresIn}
 					</label>
 					<select
 						id="expiresIn"
@@ -429,7 +416,7 @@
 						class="cursor-pointer border border-line bg-canvas px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
 					>
 						{#each EXPIRATION_OPTIONS as option (option.value)}
-							<option value={option.value}>{option.label}</option>
+							<option value={option.value}>{i18n.m.expiry[option.value]}</option>
 						{/each}
 					</select>
 				</div>
@@ -438,7 +425,7 @@
 						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
 						for="language"
 					>
-						Format
+						{i18n.m.create.format}
 					</label>
 					<select
 						id="language"
@@ -458,7 +445,8 @@
 						class="font-display text-xs font-semibold tracking-wider text-secondary uppercase"
 						for="password"
 					>
-						Passwort <span class="font-normal lowercase">(optional)</span>
+						{i18n.m.create.password}
+						<span class="font-normal lowercase">{i18n.m.create.optional}</span>
 					</label>
 					<input
 						id="password"
@@ -466,7 +454,7 @@
 						type="password"
 						autocomplete="new-password"
 						maxlength={MAX_PASSWORD_LENGTH}
-						placeholder="Zusätzlicher Passwortschutz"
+						placeholder={i18n.m.create.passwordPlaceholder}
 						class="border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
 					/>
 				</div>
@@ -480,9 +468,9 @@
 					bind:checked={onetimeEnabled}
 				/>
 				<span class="flex flex-col gap-1">
-					<span class="text-sm font-medium text-primary">Nach erstem Aufruf löschen</span>
+					<span class="text-sm font-medium text-primary">{i18n.m.create.onetime}</span>
 					<span class="text-xs text-muted">
-						Die Nachricht wird dauerhaft gelöscht, sobald sie jemand öffnet.
+						{i18n.m.create.onetimeHint}
 					</span>
 				</span>
 			</label>
@@ -508,9 +496,9 @@
 							d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
 						/>
 					</svg>
-					Wird verschlüsselt …
+					{i18n.m.create.encrypting}
 				{:else}
-					Nachricht erstellen
+					{i18n.m.create.submit}
 				{/if}
 			</button>
 		</form>
@@ -528,7 +516,7 @@
 						<span
 							class="glitch font-display text-sm font-bold tracking-wider text-primary uppercase"
 						>
-							Link bereit
+							{i18n.m.create.linkReady}
 						</span>
 						<span class="border border-line bg-canvas px-2 py-0.5 font-mono text-xs text-secondary">
 							{selectedExpiryLabel}
@@ -545,16 +533,11 @@
 							onclick={copyShareUrl}
 							class="inline-flex cursor-pointer items-center border border-line bg-canvas px-4 py-2 font-display text-xs font-semibold tracking-wider text-secondary uppercase transition-colors hover:border-primary hover:bg-primary hover:text-ink"
 						>
-							{#if copied}
-								Kopiert
-							{:else}
-								Kopieren
-							{/if}
+							{copied ? i18n.m.copied : i18n.m.copy}
 						</button>
 					</div>
 					<p class="text-xs leading-relaxed text-muted">
-						Dieser Link enthält den Schlüssel zum Entschlüsseln. Teile ihn nur mit der Person, die
-						die Nachricht lesen soll.
+						{i18n.m.create.shareHint}
 					</p>
 				</div>
 			</section>

@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const record = await getPasteOrDeleteIfExpired(params.id);
 
 	if (!record) {
-		throw error(404, 'Paste nicht gefunden');
+		throw error(404, 'Paste not found');
 	}
 
 	const requiresPassword = Boolean(record.passwordHash || record.passwordSalt);
@@ -40,7 +40,7 @@ export const actions: Actions = {
 		const record = await getPasteOrDeleteIfExpired(params.id);
 
 		if (!record) {
-			throw error(404, 'Paste nicht gefunden');
+			throw error(404, 'Paste not found');
 		}
 
 		const requiresPassword = Boolean(record.passwordHash || record.passwordSalt);
@@ -48,7 +48,7 @@ export const actions: Actions = {
 		if (!requiresPassword) {
 			if (record.onetime) {
 				return fail(400, {
-					error: 'Nutze die Einmal-Anzeige-Funktion, um diesen Paste aufzurufen.'
+					error: 'useOnetime'
 				});
 			}
 			return {
@@ -59,7 +59,7 @@ export const actions: Actions = {
 
 		const clientIdentifier = getClientIdentifier(event);
 		if (!(await checkPasswordRateLimit(clientIdentifier))) {
-			return fail(429, { error: 'Zu viele Versuche. Bitte versuche es später erneut.' });
+			return fail(429, { error: 'tooManyAttempts' });
 		}
 
 		const formData = await request.formData();
@@ -68,26 +68,26 @@ export const actions: Actions = {
 
 		if (passwordValue && passwordValue.length > MAX_PASSWORD_LENGTH) {
 			await addDelay();
-			return fail(400, { error: `Passwort muss unter ${MAX_PASSWORD_LENGTH} Zeichen sein.` });
+			return fail(400, { error: 'passwordTooLong', max: MAX_PASSWORD_LENGTH });
 		}
 
 		if (!passwordValue || !passwordValue.trim()) {
 			await addDelay();
-			return fail(400, { error: 'Passwort ist erforderlich.' });
+			return fail(400, { error: 'passwordRequired' });
 		}
 
 		if (record.onetime) {
 			const result = await consumePasteWithPassword(record.id, passwordValue);
 
 			if (result.error) {
-				if (result.error !== 'Passwort ist erforderlich.') {
+				if (result.error !== 'passwordRequired') {
 					await addDelay();
 				}
 				return fail(400, { error: result.error });
 			}
 
 			if (!result.record) {
-				throw error(404, 'Paste nicht gefunden');
+				throw error(404, 'Paste not found');
 			}
 
 			return {
@@ -102,7 +102,7 @@ export const actions: Actions = {
 
 		if (!verified) {
 			await addDelay();
-			return fail(400, { error: 'Zugriff verweigert.' });
+			return fail(400, { error: 'accessDenied' });
 		}
 
 		return {
@@ -115,17 +115,17 @@ export const actions: Actions = {
 		const record = await getPasteOrDeleteIfExpired(params.id);
 
 		if (!record) {
-			throw error(404, 'Paste nicht gefunden');
+			throw error(404, 'Paste not found');
 		}
 
 		if (!record.onetime) {
-			return fail(400, { error: 'Paste ist nicht einmalig.' });
+			return fail(400, { error: 'notOnetime' });
 		}
 
 		const clientIdentifier = getClientIdentifier(event);
 		if (record.passwordHash || record.passwordSalt) {
 			if (!(await checkPasswordRateLimit(clientIdentifier))) {
-				return fail(429, { error: 'Zu viele Versuche. Bitte versuche es später erneut.' });
+				return fail(429, { error: 'tooManyAttempts' });
 			}
 		}
 
@@ -135,20 +135,20 @@ export const actions: Actions = {
 
 		if (passwordValue && passwordValue.length > MAX_PASSWORD_LENGTH) {
 			await addDelay();
-			return fail(400, { error: `Passwort muss unter ${MAX_PASSWORD_LENGTH} Zeichen sein.` });
+			return fail(400, { error: 'passwordTooLong', max: MAX_PASSWORD_LENGTH });
 		}
 
 		const result = await consumePasteWithPassword(record.id, passwordValue);
 
 		if (result.error) {
-			if (result.error !== 'Passwort ist erforderlich.') {
+			if (result.error !== 'passwordRequired') {
 				await addDelay();
 			}
 			return fail(400, { error: result.error });
 		}
 
 		if (!result.record) {
-			throw error(404, 'Paste nicht gefunden');
+			throw error(404, 'Paste not found');
 		}
 
 		return {

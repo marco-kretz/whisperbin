@@ -119,13 +119,16 @@ export const consumePasteById = async (id: string) => {
 export const consumePasteWithPassword = async (
 	id: string,
 	password: string | null
-): Promise<{ error: string | null; record: PasteRecord | null }> => {
+): Promise<{
+	error: 'notOnetime' | 'accessDenied' | 'passwordRequired' | 'wrongPassword' | null;
+	record: PasteRecord | null;
+}> => {
 	const record = await getPasteById(id);
 
 	if (!record) return { error: null, record: null };
 
 	if (!record.onetime) {
-		return { error: 'Paste ist nicht einmalig.', record: null };
+		return { error: 'notOnetime', record: null };
 	}
 
 	const requiresPassword = Boolean(record.passwordHash || record.passwordSalt);
@@ -134,22 +137,22 @@ export const consumePasteWithPassword = async (
 
 	if (requiresPassword) {
 		if (!record.passwordHash || !record.passwordSalt) {
-			return { error: 'Zugriff verweigert.', record: null };
+			return { error: 'accessDenied', record: null };
 		}
 
 		if (!password || typeof password !== 'string' || !password.trim()) {
-			return { error: 'Passwort ist erforderlich.', record: null };
+			return { error: 'passwordRequired', record: null };
 		}
 
 		const hashed = await derivePasswordHash(password, record.passwordSalt);
 		const storedHash = Buffer.from(record.passwordHash, 'hex');
 
 		if (storedHash.length !== hashed.length) {
-			return { error: 'Falsches Passwort.', record: null };
+			return { error: 'wrongPassword', record: null };
 		}
 
 		if (!timingSafeEqual(storedHash, hashed)) {
-			return { error: 'Falsches Passwort.', record: null };
+			return { error: 'wrongPassword', record: null };
 		}
 
 		passwordHash = hashed.toString('hex');

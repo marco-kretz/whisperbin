@@ -1,5 +1,6 @@
 import { sequence, type HandleServerError, type Handle } from '@sveltejs/kit/hooks';
 import { NODE_ENV } from '$app/env/private';
+import { detectLocale } from '#lib/i18n.js';
 import { checkRateLimit, getClientIdentifier } from '#lib/server/rate-limit.js';
 
 const RATE_LIMIT_WINDOW_MS = 60000;
@@ -29,7 +30,13 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
 		});
 	}
 
-	const response = await resolve(event);
+	event.locals.locale = detectLocale(
+		event.cookies.get('locale'),
+		event.request.headers.get('accept-language')
+	);
+	const response = await resolve(event, {
+		transformPageChunk: ({ html }) => html.replace('%lang%', event.locals.locale)
+	});
 
 	response.headers.set('X-Content-Type-Options', 'nosniff');
 	response.headers.set('X-Frame-Options', 'DENY');
