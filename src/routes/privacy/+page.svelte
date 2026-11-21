@@ -93,8 +93,8 @@
 				Diese Website wird bei netcup GmbH, Emmy-Noether-Straße 10, 76131 Karlsruhe gehostet.
 				Weitere Informationen:
 				<a href="https://www.netcup.com/de/kontakt/datenschutzerklaerung" class="underline">
-					www.netcup.com/de/kontakt/datenschutzerklaerung</a
-				>.
+					www.netcup.com/de/kontakt/datenschutzerklaerung
+				</a>.
 			</p>
 		</div>
 
