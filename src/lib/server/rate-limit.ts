@@ -7,7 +7,9 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
 const PASSWORD_WINDOW_MS = 300000;
 const PASSWORD_MAX_ATTEMPTS_PER_IP = 10;
-const PASSWORD_MAX_FAILURES_PER_PASTE = 50;
+const PASSWORD_FREE_FAILURES_PER_PASTE = 5;
+const PASSWORD_BASE_DELAY_MS = 250;
+const PASSWORD_MAX_DELAY_MS = 5000;
 
 const cleanupMap = (map: Map<string, { count: number; resetTime: number }>) => {
 	const now = Date.now();
@@ -74,32 +76,29 @@ const checkRedisRateLimit = async (
 	}
 };
 
-const isLocalLimitExceeded = (key: string, maxRequests: number): boolean => {
-	const entry = rateLimitMap.get(key);
-	return Boolean(entry && Date.now() <= entry.resetTime && entry.count >= maxRequests);
-};
-
-const isRedisLimitExceeded = async (key: string, maxRequests: number): Promise<boolean | null> => {
+const getLimitKeyCount = async (key: string): Promise<number> => {
 	const redis = await getRedisClient();
-	if (!redis) return null;
 
-	try {
-		const raw = await redis.get(key);
-		const count = raw ? parseInt(raw, 10) : 0;
-		return count >= maxRequests;
-	} catch (error) {
-		console.error('Redis rate limit read error:', error);
-		return null;
+	if (redis) {
+		try {
+			const raw = await redis.get(key);
+			return raw ? parseInt(raw, 10) : 0;
+		} catch (error) {
+			console.error('Redis rate limit read error:', error);
+		}
 	}
+
+	const entry = rateLimitMap.get(key);
+	return entry && Date.now() <= entry.resetTime ? entry.count : 0;
 };
 
-const isLimitKeyExceeded = async (key: string, maxRequests: number): Promise<boolean> => {
-	const redisResult = await isRedisLimitExceeded(key, maxRequests);
-
-	if (typeof redisResult === 'boolean') return redisResult;
-
-	return isLocalLimitExceeded(key, maxRequests);
-};
+const passwordDelayMs = (failures: number): number =>
+	failures < PASSWORD_FREE_FAILURES_PER_PASTE
+		? 0
+		: Math.min(
+				PASSWORD_MAX_DELAY_MS,
+				PASSWORD_BASE_DELAY_MS * 2 ** (failures - PASSWORD_FREE_FAILURES_PER_PASTE)
+			);
 
 const checkLimitKey = async (
 	key: string,
@@ -149,22 +148,22 @@ export const checkPasswordRateLimit = async (
 	);
 	if (!ipAllowed) return false;
 
+	// Per-paste failures slow every attempt down instead of blocking, so attackers can't lock
+	// out the real recipient. The delay runs before verification so hanging up early saves nothing.
+	// shortcut: parallel requests sleep concurrently, so distributed guessing is bounded only by the
+	// per-IP limit; add a per-paste attempt queue if that ever matters.
 	const safePasteId = sanitizeIdentifier(pasteId);
-	const pasteExceeded = await isLimitKeyExceeded(
-		`password:paste:${safePasteId}`,
-		PASSWORD_MAX_FAILURES_PER_PASTE
-	);
-	return !pasteExceeded;
+	const failures = await getLimitKeyCount(`password:paste:${safePasteId}`);
+	const delay = passwordDelayMs(failures);
+	if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+	return true;
 };
 
 export const recordPasswordFailure = async (pasteId: string): Promise<void> => {
 	if (dev) return;
 	const safePasteId = sanitizeIdentifier(pasteId);
-	await checkLimitKey(
-		`password:paste:${safePasteId}`,
-		PASSWORD_MAX_FAILURES_PER_PASTE,
-		PASSWORD_WINDOW_MS
-	);
+	// Infinity: this key only counts failures, it never blocks
+	await checkLimitKey(`password:paste:${safePasteId}`, Infinity, PASSWORD_WINDOW_MS);
 };
 
 export const addDelay = async () => {

@@ -170,6 +170,12 @@
 			return;
 		}
 
+		if (typeof password === 'string' && password.length > 0 && !password.trim()) {
+			clientError = { key: 'passwordBlank' };
+			cancel();
+			return;
+		}
+
 		try {
 			encrypting = true;
 			const encrypted = await encryptPayload({

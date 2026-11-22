@@ -35,6 +35,10 @@ Set these in Coolify's Environment Variables section:
     (`redis://default:${REDIS_PASSWORD}@redis:6379`)
   - For standalone: Use Coolify's Redis service or external Redis URL
 - `REDIS_PASSWORD` - Required when deploying with `docker-compose.yml` (Redis auth password)
+  - Must be URL-safe (no `@ : / # ? %`), since it is embedded in the Redis URL;
+    generate one with `openssl rand -hex 32`
+  - **Upgrade note**: Compose no longer falls back to a default password and refuses to start
+    until `REDIS_PASSWORD` is set
 - `ADDRESS_HEADER` - Header carrying the real client IP, used for rate limiting
   - Behind Cloudflare: `CF-Connecting-IP` (only safe if the origin accepts traffic from Cloudflare only)
   - Behind a plain reverse proxy: `X-Forwarded-For`, plus `XFF_DEPTH` = number of trusted proxies
@@ -58,7 +62,8 @@ Set these in Coolify's Environment Variables section:
 ### Option 2: Use Docker Compose Redis
 
 - If using Docker Compose deployment, Redis is included in `docker-compose.yml`
-- Set `REDIS_PASSWORD` to a strong secret (`RATE_LIMIT_REDIS_URL` is configured automatically)
+- Set `REDIS_PASSWORD` to a strong, URL-safe secret (`RATE_LIMIT_REDIS_URL` is configured
+  automatically)
 
 ## Database Initialization
 

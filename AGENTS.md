@@ -28,7 +28,8 @@ Never weaken or bypass these guarantees:
 - **Rate limiting (`src/lib/server/rate-limit.ts`)**: Uses Redis in production
   (`RATE_LIMIT_REDIS_URL`, fallback `REDIS_URL`), falls back to in-memory maps in non-production,
   and is bypassed when `dev` (`vite dev`) is true. Rate limits are scoped (`global` vs `create`),
-  and password unlocks enforce both a per-IP attempt limit and a per-paste failed-attempt limit.
+  and password unlocks enforce a per-IP attempt limit plus a per-paste delay that grows with recent
+  failed attempts (never a hard per-paste lockout).
 
 ## Framework & Codebase Conventions
 

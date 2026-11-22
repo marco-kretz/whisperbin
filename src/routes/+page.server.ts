@@ -120,6 +120,18 @@ export const actions: Actions = {
 			});
 		}
 
+		if (password && !password.trim()) {
+			return fail(400, {
+				error: 'passwordBlank',
+				values: {
+					expiresIn: expiresInValue,
+					language: languageValue,
+					onetime: onetime ? 'on' : null,
+					encrypted: encrypted ? '1' : null
+				}
+			});
+		}
+
 		if (!expiresInValue) {
 			return fail(400, {
 				error: 'expiryRequired',

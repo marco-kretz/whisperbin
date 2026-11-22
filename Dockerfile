@@ -37,12 +37,12 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/build /app/build
 COPY --from=build /app/drizzle.config.ts /app/drizzle.config.ts
 COPY --from=build /app/src/lib/server/db/schema.ts /app/src/lib/server/db/schema.ts
-COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY scripts/whisperbin-entrypoint.sh /usr/local/bin/whisperbin-entrypoint.sh
 
 # Create data directory for SQLite database and make entrypoint executable
-RUN mkdir -p /data && chown -R node:node /data && chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN mkdir -p /data && chown -R node:node /data && chmod +x /usr/local/bin/whisperbin-entrypoint.sh
 
 EXPOSE 3000
 
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["whisperbin-entrypoint.sh"]
 CMD ["node", "build"]
