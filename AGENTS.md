@@ -1,138 +1,96 @@
-# Agent Instructions for mk-pasteit
+# AGENTS.md — whisperbin
 
-This document contains instructions for agentic coding assistants working in this repository.
-mk-pasteit is a SvelteKit app for creating and sharing text snippets (a pastebin-style service).
+**whisperbin** is an encrypted, disposable paste-sharing web app (zero-knowledge pastebin) built
+with SvelteKit 3, Svelte 5, TypeScript, Tailwind CSS v4, Drizzle ORM (SQLite via `better-sqlite3`),
+and Redis (production rate limiting).
 
-## Project Overview
+## Core Security & Domain Invariants
 
-SvelteKit application with TypeScript, Tailwind CSS v4, and Drizzle ORM with SQLite.
+Never weaken or bypass these guarantees:
 
-## Package Manager
+- **Client-side E2E encryption (`src/lib/crypto.ts`)**: Title and content are encrypted in the
+  browser with AES-GCM 256. The decryption key lives exclusively in the URL fragment (`#key=...`)
+  and must never be sent to, stored by, or logged on the server. Paste creation rejects unencrypted
+  submissions.
+- **Password protection**: Optional passwords are hashed server-side with `scrypt` and compared via
+  `timingSafeEqual` (`src/lib/server/paste.ts`). They gate ciphertext retrieval and are independent
+  of the client-side encryption key.
+- **Burn-after-reading (one-time pastes)**: Consumed atomically in a single conditional `UPDATE`
+  that sets `consumedAt` and wipes `content`, `contentIv`, `passwordHash`, and `passwordSalt`.
+  SQLite runs with `PRAGMA secure_delete = ON` so wiped rows are overwritten on disk.
+- **Expiration**: Expired pastes are purged lazily on access (`getPasteOrDeleteIfExpired`) and on
+  new paste creation (`deleteExpiredPastes`).
+- **Headers & CSP**: Strict CSP is configured in `vite.config.ts` (`script-src: ['self']`, no
+  inline scripts). `src/hooks.server.ts` adds security headers and `Cache-Control: no-store` on
+  HTML and JSON responses (JSON covers `__data.json` and form actions, which carry ciphertext).
+- **Rate limiting (`src/lib/server/rate-limit.ts`)**: Uses Redis in production
+  (`RATE_LIMIT_REDIS_URL`, fallback `REDIS_URL`), falls back to in-memory maps in non-production,
+  and is bypassed when `dev` (`vite dev`) is true.
 
-Use **pnpm** for all package operations:
+## Framework & Codebase Conventions
 
-- `pnpm install` - Install dependencies
-- `pnpm add <package>` - Add new package
-- `pnpm add -D <package>` - Add dev dependency
+This project uses **SvelteKit 3** (`@sveltejs/kit` v3) and **Svelte 5**—avoid SvelteKit 2 / Svelte 4
+patterns:
 
-## Development Commands
+- **SvelteKit config**: Defined inside `sveltekit({ ... })` in `vite.config.ts` (there is no
+  `svelte.config.js`).
+- **Environment variables**: Declared in `src/env.ts` via `defineEnvVars` and imported from
+  `$app/env/private` (`dev` comes from `$app/env`). Do **not** use `$env/dynamic/private`,
+  `$env/static/private`, or `$app/environment`.
+- **Internal imports**: Use `package.json` subpath imports `#lib` / `#lib/*` with `.js` extensions
+  (e.g., `#lib/server/paste.js`), **not** `$lib`.
+- **Error handling**: In SvelteKit 3, `handleError` in `src/hooks.server.ts` also receives expected
+  errors (`error(404, ...)`). Keep `if (kind !== 'unknown') return;` so expected status messages are
+  preserved.
+- **Svelte 5**: Use runes (`$props`, `$state`, `$derived`, `$effect`) and `$app/state` (not
+  `$app/stores`). Never write to module-level `$state` during SSR (it leaks across requests; see
+  `src/lib/i18n.svelte.ts`).
+- **i18n (EN/DE)**: Translations live in `src/lib/i18n.ts`; reactive state in
+  `src/lib/i18n.svelte.ts`. Server actions return `ErrorKey` strings rather than hardcoded messages.
+  Locale switching happens in-place without reloading so revealed one-time pastes and share keys are
+  not lost.
+- **Database**: Drizzle schema is in `src/lib/server/db/schema.ts`. `src/lib/server/db/index.ts`
+  lazily initializes SQLite behind a `Proxy` so builds don't require a live DB. Local dev defaults
+  live in `.env.development`.
 
-### Build & Run
+## Commands
 
-- `pnpm dev` - Start development server
-- `pnpm dev -- --open` - Start dev server and open in browser
-- `pnpm build` - Create production build
-- `pnpm preview` - Preview production build
+Use **pnpm** (`pnpm@10`):
 
-### Type Checking & Linting
+- `pnpm dev` / `pnpm build` / `pnpm start` — Dev server, production build, run built Node server
+- `pnpm check` — `svelte-kit sync && svelte-check` (TypeScript strict mode)
+- `pnpm lint` — Prettier check + ESLint
+- `pnpm format` — Auto-format with Prettier (tabs, single quotes, no trailing commas, Tailwind sort)
+- `pnpm db:push` / `pnpm db:generate` / `pnpm db:migrate` / `pnpm db:studio` — Drizzle SQLite tasks
 
-- `pnpm check` - Run svelte-check type checker
-- `pnpm check:watch` - Watch mode for type checking
-- `pnpm lint` - Run prettier check and eslint
-- `pnpm format` - Format code with prettier
+No automated test framework is configured yet.
 
-**ALWAYS run `pnpm lint` and `pnpm check` after making changes.**
+**Always run `pnpm lint` and `pnpm check` after making changes.**
 
-### Database
+## Project Map
 
-- `pnpm db:push` - Push schema changes to database
-- `pnpm db:generate` - Generate migrations
-- `pnpm db:migrate` - Run migrations
-- `pnpm db:studio` - Open Drizzle Studio
-
-### Testing
-
-No test framework is currently configured. Tests should be added using Vitest or similar framework before implementing test-driven development.
-
-## Code Style Guidelines
-
-### Formatting (Prettier)
-
-- Use **tabs** for indentation
-- Use **single quotes** for strings
-- **No trailing commas**
-- Max line width: 100 characters
-- Tailwind CSS classes are auto-sorted via plugin
-
-### TypeScript Configuration
-
-- **Strict mode enabled** - All type errors must be resolved
-- `rewriteRelativeImportExtensions: true` - Rewrites relative imports with extensions
-- `esModuleInterop: true` - ES module interoperability
-- `forceConsistentCasingInFileNames: true` - Enforce consistent casing
-
-### Import Organization
-
-Import order: External dependencies → Svelte/Dynamic imports → Local modules
-
-```typescript
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import { env } from '$env/dynamic/private';
-import * as schema from './schema';
-```
-
-### Naming Conventions
-
-- **Files**: kebab-case (e.g., `user-service.ts`, `+page.svelte`)
-- **Components/Functions**: camelCase (e.g., `getUserById`, `UserProfile`)
-- **Types/Interfaces**: PascalCase (e.g., `User`, `ApiResponse`)
-- **Constants**: UPPER_SNAKE_CASE for global constants (e.g., `MAX_RETRIES`)
-- **Tables (Drizzle)**: lowercase (e.g., `user`, `post`)
-
-### Svelte 5 Patterns
-
-- Use **runes** ($props, $state, $derived) instead of the export let syntax
-- Component props: `let { children } = $props();`
-- Server-side imports: `$env/dynamic/private` or `$env/static/private`
-
-### Error Handling
-
-- Use descriptive error messages with `throw new Error()`
-- Check environment variables early:
-
-```typescript
-if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
-```
-
-- Always handle database operations with try/catch in production code
-
-### Database Operations (Drizzle ORM)
-
-- Schema files in: `src/lib/server/db/schema.ts`
-- Database client in: `src/lib/server/db/index.ts`
-- Use `crypto.randomUUID()` for UUID primary keys
-- Export table names as lowercase constants
-- Use strongly-typed queries with the schema
-
-### Directory Structure
-
-```
+```text
+vite.config.ts              # Vite + SvelteKit 3 config, adapter-node, CSP
+drizzle.config.ts           # Drizzle Kit config (loads .env.development* outside prod)
 src/
+├── env.ts                  # SvelteKit 3 defineEnvVars schema
+├── hooks.server.ts         # Global rate limit, locale detection, security headers, handleError
 ├── lib/
-│   ├── assets/        # Static assets
-│   ├── server/        # Server-side code
-│   └── index.ts       # Barrel exports
-├── routes/            # SvelteKit routes
-│   ├── +layout.svelte
-│   └── +page.svelte
-└── app.d.ts          # Type declarations
+│   ├── crypto.ts           # Browser AES-GCM encrypt/decrypt + unbiased password generator
+│   ├── i18n.ts             # EN/DE message dictionary, locale detection, ErrorKey types
+│   ├── i18n.svelte.ts      # Client-side reactive locale state & in-place switcher
+│   ├── paste-options.ts    # Allowed expiration durations & highlight.js languages
+│   └── server/
+│       ├── db/             # schema.ts (paste table) + index.ts (lazy SQLite client)
+│       ├── paste.ts        # Paste CRUD, scrypt password hashing, atomic one-time consume
+│       ├── rate-limit.ts   # Redis + in-memory rate limiting & password brute-force delay
+│       └── redis.ts        # Lazy Redis client
+└── routes/
+    ├── +layout.server.ts   # Passes detected locale to client
+    ├── +layout.svelte      # Header, locale switcher, footer
+    ├── +page.server.ts     # Paste creation action & validation
+    ├── +page.svelte        # Paste creation UI + client-side encryption + share link
+    ├── [id]/               # Paste reveal, password unlock, one-time consume, decryption
+    ├── impressum/          # Legal notice page
+    └── privacy/            # Privacy policy page
 ```
-
-### Code Quality Rules
-
-- **ESLint** enforces: no-undef is disabled (TypeScript handles this)
-- Run `pnpm lint` to check for issues
-- Run `pnpm format` to fix formatting issues
-- Always resolve TypeScript strict mode errors before committing
-- Use existing libraries before adding new dependencies
-
-### When Adding Features
-
-1. Check existing patterns in the codebase first
-2. Follow import organization rules
-3. Use TypeScript types explicitly
-4. Write descriptive error messages
-5. Update schema files if database changes are needed
-6. Run `pnpm lint` and `pnpm check` after changes
-7. Format with `pnpm format` if needed
