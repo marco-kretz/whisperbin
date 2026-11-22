@@ -95,27 +95,6 @@ export const getPasteById = async (id: string) =>
 
 export const deletePasteById = async (id: string) => db.delete(paste).where(eq(paste.id, id));
 
-export const consumePasteById = async (id: string) => {
-	const record = await getPasteById(id);
-
-	if (!record || !record.onetime) return null;
-
-	const updated = await db
-		.update(paste)
-		.set({
-			consumedAt: new Date(),
-			content: '',
-			contentIv: null,
-			passwordHash: null,
-			passwordSalt: null
-		})
-		.where(and(eq(paste.id, id), eq(paste.onetime, true), isNull(paste.consumedAt)))
-		.returning({ id: paste.id })
-		.get();
-
-	return updated ? record : null;
-};
-
 export const consumePasteWithPassword = async (
 	id: string,
 	password: string | null
@@ -140,7 +119,7 @@ export const consumePasteWithPassword = async (
 			return { error: 'accessDenied', record: null };
 		}
 
-		if (!password || typeof password !== 'string' || !password.trim()) {
+		if (!password || typeof password !== 'string') {
 			return { error: 'passwordRequired', record: null };
 		}
 
@@ -173,6 +152,7 @@ export const consumePasteWithPassword = async (
 		.update(paste)
 		.set({
 			consumedAt: new Date(),
+			title: null,
 			content: '',
 			contentIv: null,
 			passwordHash: null,

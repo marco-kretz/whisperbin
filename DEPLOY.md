@@ -31,8 +31,10 @@ Set these in Coolify's Environment Variables section:
 
 - `DATABASE_URL` - SQLite file path (example: `/data/local.db`)
 - `RATE_LIMIT_REDIS_URL` - Redis connection string (required in production)
-  - For Docker Compose: `redis://redis:6379`
+  - For Docker Compose: set automatically from `REDIS_PASSWORD`
+    (`redis://default:${REDIS_PASSWORD}@redis:6379`)
   - For standalone: Use Coolify's Redis service or external Redis URL
+- `REDIS_PASSWORD` - Required when deploying with `docker-compose.yml` (Redis auth password)
 - `ADDRESS_HEADER` - Header carrying the real client IP, used for rate limiting
   - Behind Cloudflare: `CF-Connecting-IP` (only safe if the origin accepts traffic from Cloudflare only)
   - Behind a plain reverse proxy: `X-Forwarded-For`, plus `XFF_DEPTH` = number of trusted proxies
@@ -56,29 +58,37 @@ Set these in Coolify's Environment Variables section:
 ### Option 2: Use Docker Compose Redis
 
 - If using Docker Compose deployment, Redis is included in `docker-compose.yml`
-- Set `RATE_LIMIT_REDIS_URL=redis://redis:6379`
+- Set `REDIS_PASSWORD` to a strong secret (`RATE_LIMIT_REDIS_URL` is configured automatically)
 
 ## Database Initialization
 
-After first deployment, initialize the database schema:
+After first deployment, initialize the database schema as the `node` user so `/data/local.db` is
+writable by the running app:
 
-1. Open a shell/terminal in the running container via Coolify
-2. Run: `pnpm db:push`
+1. Open a shell/terminal in the running container via Coolify (or `docker exec -it -u node <container> sh`)
+2. Run: `su-exec node node_modules/.bin/drizzle-kit push` (or `node_modules/.bin/drizzle-kit push`
+   if already running as `node`)
 
 Or use Coolify's "Execute Command" feature:
 
-- Command: `pnpm db:push`
-- Run this once after first deploy or after schema changes
+- Command: `su-exec node node_modules/.bin/drizzle-kit push --force`
+- Without a TTY, `drizzle-kit` cannot show its confirmation prompt, so `--force` is required there.
+  It applies data-loss statements without asking; for schema changes prefer the interactive shell
+- The runtime image has no `pnpm`, so call `drizzle-kit` directly instead of `pnpm db:push`
+- Run this once after first deploy or after schema changes (if you ran it as `root`,
+  restart the container once so the entrypoint fixes `/data` permissions)
 
 ## Proxy Notes
 
 - Ensure your reverse proxy (Coolify's Traefik) allows request bodies >= 256KB
-- The default encrypted payload limit is 120 KB, so configure your proxy accordingly
+- The default encrypted payload limit is 120 KB; `BODY_SIZE_LIMIT=262144` is set in the `Dockerfile`
+  so `adapter-node` enforces a 256 KB stream limit as well
 - Coolify automatically handles SSL/TLS termination and proxying
-- Body size limits are handled at the reverse proxy level with Node.js adapter
 
 ## Troubleshooting
 
-- **Database errors**: Ensure `/data` volume is mounted and writable
+- **Database errors / permissions**: Ensure `/data` volume is mounted and writable. The container
+  runs the Node app as `node` (UID 1000) and automatically runs `chown -R node:node /data` via its
+  entrypoint so existing volumes migrate cleanly.
 - **Redis connection errors**: Verify `RATE_LIMIT_REDIS_URL` is correct and Redis is accessible
 - **Port conflicts**: Ensure port 3000 is available or set `PORT` environment variable

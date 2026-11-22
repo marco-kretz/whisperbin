@@ -28,16 +28,21 @@ FROM node:22-alpine AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV BODY_SIZE_LIMIT=262144
+
+RUN apk add --no-cache su-exec
 
 COPY --from=build /app/package.json /app/package.json
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/build /app/build
 COPY --from=build /app/drizzle.config.ts /app/drizzle.config.ts
 COPY --from=build /app/src/lib/server/db/schema.ts /app/src/lib/server/db/schema.ts
+COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-# Create data directory for SQLite database
-RUN mkdir -p /data
+# Create data directory for SQLite database and make entrypoint executable
+RUN mkdir -p /data && chown -R node:node /data && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 3000
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "build"]

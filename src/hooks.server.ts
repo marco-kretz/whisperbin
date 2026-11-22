@@ -1,10 +1,25 @@
-import { sequence, type HandleServerError, type Handle } from '@sveltejs/kit/hooks';
+import {
+	sequence,
+	type Handle,
+	type HandleServerError,
+	type ServerInit
+} from '@sveltejs/kit/hooks';
 import { NODE_ENV } from '$app/env/private';
 import { detectLocale } from '#lib/i18n.js';
+import { deleteExpiredPastes } from '#lib/server/paste.js';
 import { checkRateLimit, getClientIdentifier } from '#lib/server/rate-limit.js';
 
 const RATE_LIMIT_WINDOW_MS = 60000;
 const RATE_LIMIT_MAX_REQUESTS = 30;
+const EXPIRED_CLEANUP_INTERVAL_MS = 15 * 60 * 1000;
+
+export const init: ServerInit = () => {
+	setInterval(() => {
+		deleteExpiredPastes().catch((err) => {
+			console.error('Expired paste cleanup failed:', err);
+		});
+	}, EXPIRED_CLEANUP_INTERVAL_MS).unref();
+};
 
 export const handleError: HandleServerError = ({ error, kind }) => {
 	// SvelteKit 3 routes expected errors (e.g. error(404, ...)) here too; keep their messages
@@ -23,7 +38,14 @@ export const handleError: HandleServerError = ({ error, kind }) => {
 export const handle: Handle = sequence(async ({ event, resolve }) => {
 	const clientIdentifier = getClientIdentifier(event);
 
-	if (!(await checkRateLimit(clientIdentifier, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS))) {
+	if (
+		!(await checkRateLimit(
+			'global',
+			clientIdentifier,
+			RATE_LIMIT_MAX_REQUESTS,
+			RATE_LIMIT_WINDOW_MS
+		))
+	) {
 		return new Response('Too many requests. Please try again later.', {
 			status: 429,
 			headers: { 'Retry-After': '60' }

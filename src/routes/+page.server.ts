@@ -34,7 +34,7 @@ export const actions: Actions = {
 			return fail(413, { error: 'requestTooLarge' });
 		}
 
-		if (!(await checkRateLimit(clientIdentifier, 10, 60000))) {
+		if (!(await checkRateLimit('create', clientIdentifier, 10, 60000))) {
 			return fail(429, { error: 'tooManyRequests' });
 		}
 
@@ -47,7 +47,8 @@ export const actions: Actions = {
 		const expiresInValue = typeof expiresIn === 'string' ? expiresIn : null;
 		const language = formData.get('language');
 		const languageValue = typeof language === 'string' ? language : null;
-		const password = normalizeOptionalString(formData.get('password'));
+		const rawPassword = formData.get('password');
+		const password = typeof rawPassword === 'string' && rawPassword.length > 0 ? rawPassword : null;
 		const onetime = formData.get('onetime') === 'on';
 		const rawTitle = formData.get('title');
 		const title = typeof rawTitle === 'string' ? rawTitle : '';
