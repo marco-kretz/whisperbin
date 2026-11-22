@@ -1,9 +1,18 @@
 import { error, fail } from '@sveltejs/kit';
 
-import { consumePasteWithPassword, getPasteOrDeleteIfExpired } from '#lib/server/paste.js';
+import {
+	consumePasteWithPassword,
+	getPasteOrDeleteIfExpired,
+	verifyPastePassword
+} from '#lib/server/paste.js';
 import type { Actions, PageServerLoad } from './$types';
 
-import { addDelay, checkPasswordRateLimit, getClientIdentifier } from '#lib/server/rate-limit.js';
+import {
+	addDelay,
+	checkPasswordRateLimit,
+	getClientIdentifier,
+	recordPasswordFailure
+} from '#lib/server/rate-limit.js';
 
 const MAX_PASSWORD_LENGTH = 200;
 
@@ -58,7 +67,7 @@ export const actions: Actions = {
 		}
 
 		const clientIdentifier = getClientIdentifier(event);
-		if (!(await checkPasswordRateLimit(clientIdentifier))) {
+		if (!(await checkPasswordRateLimit(clientIdentifier, record.id))) {
 			return fail(429, { error: 'tooManyAttempts' });
 		}
 
@@ -71,7 +80,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'passwordTooLong', max: MAX_PASSWORD_LENGTH });
 		}
 
-		if (!passwordValue || !passwordValue.trim()) {
+		if (!passwordValue) {
 			await addDelay();
 			return fail(400, { error: 'passwordRequired' });
 		}
@@ -80,6 +89,9 @@ export const actions: Actions = {
 			const result = await consumePasteWithPassword(record.id, passwordValue);
 
 			if (result.error) {
+				if (result.error === 'wrongPassword' || result.error === 'accessDenied') {
+					await recordPasswordFailure(record.id);
+				}
 				if (result.error !== 'passwordRequired') {
 					await addDelay();
 				}
@@ -96,11 +108,10 @@ export const actions: Actions = {
 			};
 		}
 
-		const verified = await import('#lib/server/paste.js').then((m) =>
-			m.verifyPastePassword(record, passwordValue)
-		);
+		const verified = await verifyPastePassword(record, passwordValue);
 
 		if (!verified) {
+			await recordPasswordFailure(record.id);
 			await addDelay();
 			return fail(400, { error: 'accessDenied' });
 		}
@@ -124,7 +135,7 @@ export const actions: Actions = {
 
 		const clientIdentifier = getClientIdentifier(event);
 		if (record.passwordHash || record.passwordSalt) {
-			if (!(await checkPasswordRateLimit(clientIdentifier))) {
+			if (!(await checkPasswordRateLimit(clientIdentifier, record.id))) {
 				return fail(429, { error: 'tooManyAttempts' });
 			}
 		}
@@ -141,6 +152,9 @@ export const actions: Actions = {
 		const result = await consumePasteWithPassword(record.id, passwordValue);
 
 		if (result.error) {
+			if (result.error === 'wrongPassword' || result.error === 'accessDenied') {
+				await recordPasswordFailure(record.id);
+			}
 			if (result.error !== 'passwordRequired') {
 				await addDelay();
 			}

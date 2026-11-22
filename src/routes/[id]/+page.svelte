@@ -2,7 +2,9 @@
 	import hljs from 'highlight.js';
 
 	import { enhance, type SubmitFunction } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { onMount, tick } from 'svelte';
 	import type { Action } from 'svelte/action';
 
@@ -137,6 +139,13 @@
 			});
 			decryptedContent = payload.content;
 			decryptedTitle = payload.title;
+			if (isOnetime && window.location.hash) {
+				void goto(resolve('/[id]', { id: data.paste.id }), {
+					replace: true,
+					shallow: true,
+					state: page.state
+				});
+			}
 		} catch (error) {
 			console.error('Decryption failed:', error);
 			decryptError = 'decryptFailed';

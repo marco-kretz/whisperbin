@@ -64,6 +64,7 @@
 	let encryptionKey = $state<string | null>(null);
 	let clientError = $state<{ key: ErrorKey; max?: number } | null>(null);
 	let encrypting = $state(false);
+	let hydrated = $state(false);
 
 	$effect(() => {
 		if (values.expiresIn) selectedExpiry = values.expiresIn;
@@ -95,6 +96,7 @@
 		Math.min(MAX_GENERATED_LENGTH, Math.max(MIN_GENERATED_LENGTH, Math.round(value) || 0));
 
 	onMount(() => {
+		hydrated = true;
 		try {
 			const stored = JSON.parse(localStorage.getItem(GENERATOR_SETTINGS_KEY) ?? 'null');
 			if (typeof stored?.length === 'number') generatedLength = clampGeneratedLength(stored.length);
@@ -164,6 +166,12 @@
 		const password = formData.get('password');
 		if (typeof password === 'string' && password.length > MAX_PASSWORD_LENGTH) {
 			clientError = { key: 'passwordTooLong', max: MAX_PASSWORD_LENGTH };
+			cancel();
+			return;
+		}
+
+		if (typeof password === 'string' && password.length > 0 && !password.trim()) {
+			clientError = { key: 'passwordBlank' };
 			cancel();
 			return;
 		}
@@ -293,7 +301,6 @@
 				</label>
 				<input
 					id="title"
-					name="title"
 					placeholder={i18n.m.create.titlePlaceholder}
 					maxlength={MAX_TITLE_LENGTH}
 					class="border border-line bg-canvas px-3 py-2 text-sm text-primary placeholder:text-muted focus:border-accent focus:outline-none"
@@ -310,7 +317,6 @@
 				</label>
 				<textarea
 					id="content"
-					name="content"
 					rows="6"
 					required
 					maxlength={MAX_CONTENT_LENGTH}
@@ -477,7 +483,7 @@
 
 			<button
 				type="submit"
-				disabled={encrypting}
+				disabled={!hydrated || encrypting}
 				class="inline-flex cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-3 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				{#if encrypting}
