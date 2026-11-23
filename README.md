@@ -21,6 +21,13 @@ Encrypted, disposable paste sharing built with SvelteKit, Tailwind CSS v4, Drizz
 
 Anyone with the full URL can decrypt the paste, so share carefully.
 
+### Trust Model
+
+Encryption runs in the browser, but the browser runs the JavaScript the server delivers. A malicious
+or compromised server could ship code that leaks the key; this applies to any web-based end-to-end
+encryption. The source code is public, so it can be audited and self-hosted, but that alone doesn't
+prove what a given instance actually serves. If you don't trust an instance's operator, run your own.
+
 The optional password is checked server-side (scrypt hash) before the ciphertext is handed out; it
 is not part of the encryption key. One-time pastes are wiped from the database on first reveal.
 Expired pastes are deleted when accessed, when a new paste is created, and by a cleanup job every
