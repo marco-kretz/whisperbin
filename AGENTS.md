@@ -76,9 +76,16 @@ No automated test framework is configured yet.
 ```text
 vite.config.ts              # Vite + SvelteKit 3 config, adapter-node, CSP
 drizzle.config.ts           # Drizzle Kit config (loads .env.development* outside prod)
+pnpm-workspace.yaml         # pnpm settings (allowBuilds for native deps)
+Dockerfile                  # Multi-stage node:26-alpine build; runtime runs as `node`
+docker-compose.yml          # App + password-protected Redis
+scripts/
+├── prepare.mjs             # `svelte-kit sync` on install (skipped when not installed)
+└── whisperbin-entrypoint.sh # Fixes /data ownership, drops root via su-exec
 src/
 ├── env.ts                  # SvelteKit 3 defineEnvVars schema
-├── hooks.server.ts         # Global rate limit, locale detection, security headers, handleError
+├── hooks.server.ts         # Global rate limit, locale detection, security headers, handleError,
+│                           # periodic expired-paste cleanup (ServerInit)
 ├── lib/
 │   ├── crypto.ts           # Browser AES-GCM encrypt/decrypt + unbiased password generator
 │   ├── i18n.ts             # EN/DE message dictionary, locale detection, ErrorKey types

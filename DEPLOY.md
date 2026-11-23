@@ -22,7 +22,8 @@
 
 - **Build command**: `pnpm run build` (handled automatically by Dockerfile)
 - **Start command**: `node build` (handled automatically by Dockerfile CMD)
-- **Runtime**: Node.js 26+ with pnpm
+- **Runtime**: Node.js 26 (`node:26-alpine`); pnpm 12 is only used in the build stage, the runtime
+  image has no `pnpm`
 - **Port**: 3000 (adapter-node uses `PORT` env var, defaults to 3000)
 
 ## Required Environment Variables
@@ -74,7 +75,8 @@ writable by the running app:
 2. Run: `su-exec node node_modules/.bin/drizzle-kit push` (or `node_modules/.bin/drizzle-kit push`
    if already running as `node`)
 
-Or use Coolify's "Execute Command" feature:
+Or set it as Coolify's **Post-deployment command** (container `app`) so it runs after every deploy,
+or run it once via Coolify's "Execute Command" feature:
 
 - Command: `su-exec node node_modules/.bin/drizzle-kit push --force`
 - Without a TTY, `drizzle-kit` cannot show its confirmation prompt, so `--force` is required there.

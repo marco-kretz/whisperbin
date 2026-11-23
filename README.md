@@ -23,12 +23,13 @@ Anyone with the full URL can decrypt the paste, so share carefully.
 
 The optional password is checked server-side (scrypt hash) before the ciphertext is handed out; it
 is not part of the encryption key. One-time pastes are wiped from the database on first reveal.
-Expired pastes are deleted when accessed or when a new paste is created.
+Expired pastes are deleted when accessed, when a new paste is created, and by a cleanup job every
+15 minutes.
 
 ## Requirements
 
 - Node.js 26+
-- pnpm
+- pnpm 12
 
 ## Local Development
 
@@ -70,6 +71,8 @@ Environment variables:
 - Password length: 200 characters
 - Rate limits per IP: 30 requests/minute overall, 10 new pastes/minute, 10 password attempts per
   5 minutes
+- Password attempts per paste: after 5 failures within 5 minutes, each attempt is delayed
+  (250 ms, doubling up to 5 s) before verification
 
 ## Deployment
 
