@@ -49,6 +49,8 @@
 	// Captured on submit because a successful form update resets the inputs
 	let submittedPassword = $state<string | null>(null);
 	let decryptRun = 0;
+	let hydrated = $state(false);
+	let submitting = $state(false);
 	const rootPath = '/' as const;
 
 	const plainContent = $derived(form?.content ?? data.paste.content ?? '');
@@ -73,12 +75,13 @@
 	const consumeSubmit: SubmitFunction = ({ formData }) => {
 		const password = formData.get('password');
 		submittedPassword = typeof password === 'string' && password.length > 0 ? password : null;
+		submitting = true;
 		return async ({ result, update }) => {
-			if (result.type === 'success') {
-				await update({ invalidateAll: false });
-				return;
+			try {
+				await update(result.type === 'success' ? { invalidateAll: false } : undefined);
+			} finally {
+				submitting = false;
 			}
-			await update();
 		};
 	};
 
@@ -103,6 +106,8 @@
 	};
 
 	onMount(() => {
+		// A submit before hydration is a plain POST without the #key fragment and burns one-time pastes
+		hydrated = true;
 		const updateKey = () => {
 			const hash = window.location.hash.startsWith('#')
 				? window.location.hash.slice(1)
@@ -253,7 +258,8 @@
 					/>
 					<button
 						type="submit"
-						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-2.5 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary hover:text-ink"
+						disabled={!hydrated || submitting}
+						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-accent px-5 py-2.5 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{i18n.m.view.unlock}
 					</button>
@@ -296,7 +302,8 @@
 					{/if}
 					<button
 						type="submit"
-						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-danger px-5 py-2.5 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary"
+						disabled={!hydrated || submitting}
+						class="inline-flex cursor-pointer items-center justify-center gap-2 bg-danger px-5 py-2.5 font-display text-sm font-bold tracking-wider text-ink uppercase transition-colors cut hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{i18n.m.view.reveal}
 					</button>

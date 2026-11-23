@@ -89,7 +89,8 @@ src/
 ├── hooks.server.ts         # Global rate limit, locale detection, security headers, handleError,
 │                           # periodic expired-paste cleanup (ServerInit)
 ├── lib/
-│   ├── crypto.ts           # Browser AES-GCM encrypt/decrypt + unbiased password generator
+│   ├── crypto.ts           # Browser AES-GCM encrypt/decrypt (PBKDF2 key for passwords),
+│   │                       # unbiased password generator
 │   ├── i18n.ts             # EN/DE message dictionary, locale detection, ErrorKey types
 │   ├── i18n.svelte.ts      # Client-side reactive locale state & in-place switcher
 │   ├── paste-options.ts    # Allowed expiration durations & highlight.js languages
