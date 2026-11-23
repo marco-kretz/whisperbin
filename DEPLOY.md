@@ -22,7 +22,7 @@
 
 - **Build command**: `pnpm run build` (handled automatically by Dockerfile)
 - **Start command**: `node build` (handled automatically by Dockerfile CMD)
-- **Runtime**: Node.js 22+ with pnpm
+- **Runtime**: Node.js 26+ with pnpm
 - **Port**: 3000 (adapter-node uses `PORT` env var, defaults to 3000)
 
 ## Required Environment Variables

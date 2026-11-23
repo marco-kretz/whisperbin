@@ -1,9 +1,9 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 
 WORKDIR /app
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+RUN npm install -g pnpm@10.33.0
 
 # Install build dependencies for native modules
 RUN apk add --no-cache python3 make g++
@@ -23,7 +23,7 @@ RUN mkdir -p /data || true
 RUN pnpm run build
 RUN pnpm prune --prod
 
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 
 WORKDIR /app
 
