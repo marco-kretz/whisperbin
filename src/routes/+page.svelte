@@ -178,10 +178,11 @@
 
 		try {
 			encrypting = true;
-			const encrypted = await encryptPayload({
-				title: trimmedTitle.length > 0 ? trimmedTitle : null,
-				content: contentValue
-			});
+			// Same value the server hashes: untrimmed, empty means no password
+			const encrypted = await encryptPayload(
+				{ title: trimmedTitle.length > 0 ? trimmedTitle : null, content: contentValue },
+				typeof password === 'string' && password.length > 0 ? password : null
+			);
 
 			encryptionKey = encrypted.key;
 			formData.set('content', encrypted.cipherText);

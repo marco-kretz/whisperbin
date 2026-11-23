@@ -46,6 +46,9 @@
 	let decryptedTitle = $state<string | null>(null);
 	let decryptError = $state<ErrorKey | null>(null);
 	let keyFromHash = $state<string | null>(null);
+	// Captured on submit because a successful form update resets the inputs
+	let submittedPassword = $state<string | null>(null);
+	let decryptRun = 0;
 	const rootPath = '/' as const;
 
 	const plainContent = $derived(form?.content ?? data.paste.content ?? '');
@@ -67,7 +70,9 @@
 	);
 	const lineCount = $derived(pasteContent ? pasteContent.split('\n').length : 0);
 
-	const consumeSubmit: SubmitFunction = () => {
+	const consumeSubmit: SubmitFunction = ({ formData }) => {
+		const password = formData.get('password');
+		submittedPassword = typeof password === 'string' && password.length > 0 ? password : null;
 		return async ({ result, update }) => {
 			if (result.type === 'success') {
 				await update({ invalidateAll: false });
@@ -120,8 +125,11 @@
 	const decryptIfPossible = async (
 		activeCipherText: string,
 		activeCipherIv: string,
-		activeKey: string | null
+		activeKey: string | null,
+		activePassword: string | null
 	) => {
+		// PBKDF2 takes a moment, so a newer run must win over a slower stale one
+		const run = ++decryptRun;
 		if (!activeCipherText || !activeCipherIv) {
 			decryptError = null;
 			return;
@@ -135,8 +143,10 @@
 			const payload = await decryptPayload({
 				cipherText: activeCipherText,
 				iv: activeCipherIv,
-				key: activeKey
+				key: activeKey,
+				password: activePassword
 			});
+			if (run !== decryptRun) return;
 			decryptedContent = payload.content;
 			decryptedTitle = payload.title;
 			if (isOnetime && window.location.hash) {
@@ -147,6 +157,7 @@
 				});
 			}
 		} catch (error) {
+			if (run !== decryptRun) return;
 			console.error('Decryption failed:', error);
 			decryptError = 'decryptFailed';
 		}
@@ -157,9 +168,10 @@
 		const activeCipherText = cipherText;
 		const activeCipherIv = cipherIv;
 		const activeKey = keyFromHash;
+		const activePassword = submittedPassword;
 		decryptedContent = '';
 		decryptedTitle = null;
-		void decryptIfPossible(activeCipherText, activeCipherIv, activeKey);
+		void decryptIfPossible(activeCipherText, activeCipherIv, activeKey, activePassword);
 	});
 
 	function formatDate(date: Date): string {

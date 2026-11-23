@@ -28,8 +28,10 @@ or compromised server could ship code that leaks the key; this applies to any we
 encryption. The source code is public, so it can be audited and self-hosted, but that alone doesn't
 prove what a given instance actually serves. If you don't trust an instance's operator, run your own.
 
-The optional password is checked server-side (scrypt hash) before the ciphertext is handed out; it
-is not part of the encryption key. One-time pastes are wiped from the database on first reveal.
+The optional password is part of the encryption: the browser derives the AES key from the link key
+and the password (PBKDF2-SHA256, 600,000 iterations), so the link alone can't decrypt a
+password-protected paste, even with access to the database. The server also checks the password
+(scrypt hash) before handing out the ciphertext, so it does receive the password. One-time pastes are wiped from the database on first reveal.
 Expired pastes are deleted when accessed, when a new paste is created, and by a cleanup job every
 15 minutes.
 
