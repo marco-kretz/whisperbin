@@ -12,9 +12,11 @@ Never weaken or bypass these guarantees:
   browser with AES-GCM 256. The decryption key lives exclusively in the URL fragment (`#key=...`)
   and must never be sent to, stored by, or logged on the server. Paste creation rejects unencrypted
   submissions.
-- **Password protection**: Optional passwords are hashed server-side with `scrypt` and compared via
-  `timingSafeEqual` (`src/lib/server/paste.ts`). They gate ciphertext retrieval and are independent
-  of the client-side encryption key.
+- **Password protection**: Optional passwords are part of the client-side key: `src/lib/crypto.ts`
+  derives the AES-GCM key with PBKDF2-SHA256 (600k iterations) from the password, salted with the
+  random link key. The server additionally hashes them with `scrypt` and compares via
+  `timingSafeEqual` (`src/lib/server/paste.ts`) to gate ciphertext retrieval. Client and server
+  must use the same untrimmed password string (empty means no password).
 - **Burn-after-reading (one-time pastes)**: Consumed atomically in a single conditional `UPDATE`
   that sets `consumedAt` and wipes `title`, `content`, `contentIv`, `passwordHash`, and
   `passwordSalt`. SQLite runs with `PRAGMA secure_delete = ON` so wiped rows are overwritten on
@@ -67,9 +69,9 @@ Use **pnpm** (`pnpm@12`):
 - `pnpm format` — Auto-format with Prettier (tabs, single quotes, no trailing commas, Tailwind sort)
 - `pnpm db:push` / `pnpm db:generate` / `pnpm db:migrate` / `pnpm db:studio` — Drizzle SQLite tasks
 
-No automated test framework is configured yet.
+- `pnpm test` — Unit tests via the built-in `node:test` runner (`src/**/*.test.ts`, no extra framework)
 
-**Always run `pnpm lint` and `pnpm check` after making changes.**
+**Always run `pnpm lint`, `pnpm check`, and `pnpm test` after making changes.**
 
 ## Project Map
 
@@ -87,7 +89,8 @@ src/
 ├── hooks.server.ts         # Global rate limit, locale detection, security headers, handleError,
 │                           # periodic expired-paste cleanup (ServerInit)
 ├── lib/
-│   ├── crypto.ts           # Browser AES-GCM encrypt/decrypt + unbiased password generator
+│   ├── crypto.ts           # Browser AES-GCM encrypt/decrypt (PBKDF2 key for passwords),
+│   │                       # unbiased password generator
 │   ├── i18n.ts             # EN/DE message dictionary, locale detection, ErrorKey types
 │   ├── i18n.svelte.ts      # Client-side reactive locale state & in-place switcher
 │   ├── paste-options.ts    # Allowed expiration durations & highlight.js languages

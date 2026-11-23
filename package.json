@@ -9,6 +9,7 @@
 		"build": "vite build",
 		"start": "node build",
 		"preview": "vite preview",
+		"test": "node --test 'src/**/*.test.ts'",
 		"prepare": "node scripts/prepare.mjs",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

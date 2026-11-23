@@ -4,6 +4,10 @@ type EncryptedPayload = {
 	key: string;
 };
 
+// OWASP recommendation for PBKDF2-HMAC-SHA256
+const PBKDF2_ITERATIONS = 600_000;
+const RAW_KEY_LENGTH = 32;
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -34,15 +38,36 @@ export const decodeBase64Url = (value: string) => {
 	return base64ToBytes(padded);
 };
 
-export const encryptPayload = async (payload: { title: string | null; content: string }) => {
-	const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
-		'encrypt',
-		'decrypt'
+// The random link key doubles as the PBKDF2 salt: it is unique per paste and secret, so with a
+// password set neither the link nor the password alone can derive the AES key.
+const deriveAesKey = async (
+	rawKey: Uint8Array<ArrayBuffer>,
+	password: string | null,
+	usage: 'encrypt' | 'decrypt'
+) => {
+	if (!password) return crypto.subtle.importKey('raw', rawKey, 'AES-GCM', false, [usage]);
+
+	const material = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, [
+		'deriveKey'
 	]);
+	return crypto.subtle.deriveKey(
+		{ name: 'PBKDF2', hash: 'SHA-256', salt: rawKey, iterations: PBKDF2_ITERATIONS },
+		material,
+		{ name: 'AES-GCM', length: 256 },
+		false,
+		[usage]
+	);
+};
+
+export const encryptPayload = async (
+	payload: { title: string | null; content: string },
+	password: string | null = null
+) => {
+	const rawKey = crypto.getRandomValues(new Uint8Array(RAW_KEY_LENGTH));
+	const key = await deriveAesKey(rawKey, password, 'encrypt');
 	const iv = crypto.getRandomValues(new Uint8Array(12));
 	const encodedPayload = encoder.encode(JSON.stringify(payload));
 	const cipherBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encodedPayload);
-	const rawKey = new Uint8Array(await crypto.subtle.exportKey('raw', key));
 
 	return {
 		cipherText: encodeBase64Url(new Uint8Array(cipherBuffer)),
@@ -51,18 +76,24 @@ export const encryptPayload = async (payload: { title: string | null; content: s
 	} satisfies EncryptedPayload;
 };
 
-export const decryptPayload = async (payload: EncryptedPayload) => {
+export const decryptPayload = async (payload: EncryptedPayload & { password?: string | null }) => {
 	const keyBytes = decodeBase64Url(payload.key);
 	const ivBytes = decodeBase64Url(payload.iv);
 	const cipherBytes = decodeBase64Url(payload.cipherText);
+	const password = payload.password || null;
 
-	const key = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']);
-	const plainBuffer = await crypto.subtle.decrypt(
-		{ name: 'AES-GCM', iv: ivBytes },
-		key,
-		cipherBytes
-	);
-	const decoded = decoder.decode(plainBuffer);
+	const decryptWith = async (key: CryptoKey) =>
+		decoder.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ivBytes }, key, cipherBytes));
+
+	let decoded: string;
+	try {
+		decoded = await decryptWith(await deriveAesKey(keyBytes, password, 'decrypt'));
+	} catch (error) {
+		// shortcut: password pastes created before password-based key derivation used the link key
+		// alone; remove this fallback 7 days (the longest expiry) after that change is deployed.
+		if (!password) throw error;
+		decoded = await decryptWith(await deriveAesKey(keyBytes, null, 'decrypt'));
+	}
 
 	return JSON.parse(decoded) as { title: string | null; content: string };
 };
