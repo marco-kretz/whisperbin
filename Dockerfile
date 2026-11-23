@@ -3,12 +3,12 @@ FROM node:26-alpine AS build
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm@10.33.0
+RUN npm install -g pnpm@12.21.0
 
 # Install build dependencies for native modules
 RUN apk add --no-cache python3 make g++
 
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY scripts/prepare.mjs ./scripts/prepare.mjs
 RUN pnpm install --frozen-lockfile
 

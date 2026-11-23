@@ -59,7 +59,7 @@ patterns:
 
 ## Commands
 
-Use **pnpm** (`pnpm@10`):
+Use **pnpm** (`pnpm@12`):
 
 - `pnpm dev` / `pnpm build` / `pnpm start` — Dev server, production build, run built Node server
 - `pnpm check` — `svelte-kit sync && svelte-check` (TypeScript strict mode)
