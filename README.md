@@ -27,7 +27,7 @@ Expired pastes are deleted when accessed or when a new paste is created.
 
 ## Requirements
 
-- Node.js 22+
+- Node.js 26+
 - pnpm
 
 ## Local Development

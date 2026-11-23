@@ -22,7 +22,7 @@
 
 - **Build command**: `pnpm run build` (handled automatically by Dockerfile)
 - **Start command**: `node build` (handled automatically by Dockerfile CMD)
-- **Runtime**: Node.js 22+ with pnpm
+- **Runtime**: Node.js 26+ with pnpm
 - **Port**: 3000 (adapter-node uses `PORT` env var, defaults to 3000)
 
 ## Required Environment Variables
@@ -31,7 +31,7 @@ Set these in Coolify's Environment Variables section:
 
 - `DATABASE_URL` - SQLite file path (example: `/data/local.db`)
 - `RATE_LIMIT_REDIS_URL` - Redis connection string (required in production)
-  - For Docker Compose: `redis://redis:6379`
+  - For Docker Compose: set automatically by `docker-compose.yml` (set `REDIS_PASSWORD` instead)
   - For standalone: Use Coolify's Redis service or external Redis URL
 - `ADDRESS_HEADER` - Header carrying the real client IP, used for rate limiting
   - Behind Cloudflare: `CF-Connecting-IP` (only safe if the origin accepts traffic from Cloudflare only)
@@ -56,18 +56,18 @@ Set these in Coolify's Environment Variables section:
 ### Option 2: Use Docker Compose Redis
 
 - If using Docker Compose deployment, Redis is included in `docker-compose.yml`
-- Set `RATE_LIMIT_REDIS_URL=redis://redis:6379`
+- `RATE_LIMIT_REDIS_URL` is set automatically; set `REDIS_PASSWORD` instead
 
 ## Database Initialization
 
 After first deployment, initialize the database schema:
 
 1. Open a shell/terminal in the running container via Coolify
-2. Run: `pnpm db:push`
+2. Run: `npx drizzle-kit push`
 
 Or use Coolify's "Execute Command" feature:
 
-- Command: `pnpm db:push`
+- Command: `npx drizzle-kit push`
 - Run this once after first deploy or after schema changes
 
 ## Proxy Notes
