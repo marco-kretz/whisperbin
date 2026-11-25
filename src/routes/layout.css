@@ -162,14 +162,16 @@ h3 {
 	color: var(--color-primary);
 }
 
-a {
-	color: var(--color-accent);
-	transition: color 0.15s ease;
-	text-decoration: none;
-}
+@layer base {
+	a {
+		color: var(--color-accent);
+		transition: color 0.15s ease;
+		text-decoration: none;
+	}
 
-a:hover {
-	color: var(--color-accent-hover);
+	a:hover {
+		color: var(--color-accent-hover);
+	}
 }
 
 ::selection {

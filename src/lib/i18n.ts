@@ -12,8 +12,13 @@ const en = {
 	copied: 'Copied',
 	back: '← Back',
 	footer: { imprint: 'Legal notice', privacy: 'Privacy' },
-	notFound: 'Paste not found',
-	genericError: 'Something went wrong',
+	errorPage: {
+		notFoundTitle: 'Message unavailable',
+		notFoundDescription: 'This link may have expired, already been opened, or never existed.',
+		genericTitle: 'Something went wrong',
+		genericDescription: 'An unexpected error occurred. Please try again in a moment.',
+		cta: 'Create a new message'
+	},
 	expiry: {
 		'1h': '1 hour',
 		'6h': '6 hours',
@@ -104,8 +109,15 @@ const de: typeof en = {
 	copied: 'Kopiert',
 	back: '← Zurück',
 	footer: { imprint: 'Impressum', privacy: 'Datenschutz' },
-	notFound: 'Paste nicht gefunden',
-	genericError: 'Etwas ist schiefgelaufen',
+	errorPage: {
+		notFoundTitle: 'Nachricht nicht verfügbar',
+		notFoundDescription:
+			'Dieser Link ist möglicherweise abgelaufen, wurde bereits geöffnet oder hat nie existiert.',
+		genericTitle: 'Etwas ist schiefgelaufen',
+		genericDescription:
+			'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es gleich noch einmal.',
+		cta: 'Neue Nachricht erstellen'
+	},
 	expiry: {
 		'1h': '1 Stunde',
 		'6h': '6 Stunden',
